@@ -9,7 +9,11 @@ var DEBUG = false;
 
 
 if (process.env.port || DEBUG){
-        var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
+    var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
+    bot.configure({
+        userWelcomeMessage: "Hello... Welcome to the group.",
+        goodbyeMessage: "Goodbye..."
+    });        
 } else {
     var bot = new builder.TextBot();
 }
@@ -92,9 +96,10 @@ if (process.env.port || DEBUG){
             if (query.msg){
             var msg = "A message for you:" + query.msg;
             console.log("slackBot", bot);
-            builder.DialogAction.send(msg);
-            bot.send(msg);
-            slackBot.bot.say(msg);
+            //builder.DialogAction.send(msg);
+            //bot.send(msg);
+            //slackBot.bot.say(msg);
+            //bot.beginDialog(address: IBeginDialogAddress, dialogId: string, dialogArgs?: any): void
             res.send("A message for you:" + msg);
         } else {
             res.send('No msg...');
