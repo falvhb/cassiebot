@@ -2,10 +2,13 @@ var restify = require('restify');
 var builder = require('botbuilder');
 var Botkit = require('botkit');
 var prompts = require('./prompts');
+var url = require('url');
 
 // Create bot and add dialogs
+var DEBUG = false;
 
-if (process.env.port){
+
+if (process.env.port || DEBUG){
     var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
 } else {
     var bot = new builder.TextBot();
@@ -45,18 +48,10 @@ bot.use(function (session, next) {
 
 
 // Setup Restify Server
-if (process.env.port){
-    var server = restify.createServer();
-    server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
-    
-    server.get('/', function(req, res, next) {
-        res.send('hello ' + process.env.appId);
-        next();
-    })
+if (process.env.port || DEBUG){
 
-    server.listen(process.env.port || 3978, function () {
-        console.log('%s listening to %s', server.name, server.url); 
-    });
+
+
 
 
     var slackController = Botkit.slackbot();
@@ -69,19 +64,40 @@ if (process.env.port){
     
     slackBot.listenForMentions();
     
-    slackBotSpawn.startRTM(function(err,slackBotSpawn,payload) {
-        if (err) {
-            throw new Error('Could not connect to Slack');
-        }
+    if (!DEBUG){
+        slackBotSpawn.startRTM(function(err,slackBotSpawn,payload) {
+            if (err) {
+                throw new Error('Could not connect to Slack');
+            }
+        });
+    }
+
+    /**
+     * SERVER 
+     */
+    var server = restify.createServer();
+    
+    server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
+    
+    server.get('/', function(req, res, next) {
+        res.send('hello ' + process.env.appId);
+        next();
     });
+
     
     //External API
-    server.get('/api/ext', function(req, res, next) {
-        var msg = req.params.msg;
+    server.get('/ext', function(req, res, next) {
+        var query = url.parse(req.url,true).query;
+        console.log('params', query)
+        var msg = query.msg;
         builder.DialogAction.send("A message for you:" + msg);
         res.send("A message for you:" + msg);
         next();
-    })
+    });
+
+    server.listen(process.env.port || 3978, function () {
+        console.log('%s listening to %s', server.name, server.url); 
+    });
 
 } else {
     bot.listenStdin();
