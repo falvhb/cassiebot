@@ -57,6 +57,23 @@ if (process.env.port){
         console.log('%s listening to %s', server.name, server.url); 
     });
 
+
+    var controller = Botkit.slackbot();
+    var bot = controller.spawn({
+      token: process.env.token
+    });
+    
+    var slackBot = new builder.SlackBot(controller, bot);
+    slackBot.add('/', commands);
+    
+    slackBot.listenForMentions();
+    
+    bot.startRTM(function(err,bot,payload) {
+    if (err) {
+        throw new Error('Could not connect to Slack');
+    }
+    });
+
 } else {
     bot.listenStdin();
 }
