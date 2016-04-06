@@ -9,7 +9,7 @@ var DEBUG = false;
 
 
 if (process.env.port || DEBUG){
-    var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
+        var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
 } else {
     var bot = new builder.TextBot();
 }
@@ -91,8 +91,9 @@ if (process.env.port || DEBUG){
         console.log('params', query)
             if (query.msg){
             var msg = "A message for you:" + query.msg;
-            builder.DialogAction.send(msg);
             console.log("slackBot", slackBot.bot);
+            builder.DialogAction.send(msg);
+            bot.send(msg);
             slackBot.bot.say(msg);
             res.send("A message for you:" + msg);
         } else {
