@@ -50,8 +50,8 @@ if (process.env.port){
     server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
     
     server.get('/', function(req, res, next) {
-    res.send('hello ' + process.env.appId);
-    next();
+        res.send('hello ' + process.env.appId);
+        next();
     })
 
     server.listen(process.env.port || 3978, function () {
@@ -70,10 +70,18 @@ if (process.env.port){
     slackBot.listenForMentions();
     
     slackBotSpawn.startRTM(function(err,slackBotSpawn,payload) {
-    if (err) {
-        throw new Error('Could not connect to Slack');
-    }
+        if (err) {
+            throw new Error('Could not connect to Slack');
+        }
     });
+    
+    //External API
+    server.get('/api/ext', function(req, res, next) {
+        var msg = req.params.msg;
+        builder.DialogAction.send("A message for you:" + msg);
+        res.send("A message for you:" + msg);
+        next();
+    })
 
 } else {
     bot.listenStdin();
