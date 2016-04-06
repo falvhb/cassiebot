@@ -59,17 +59,17 @@ if (process.env.port){
     });
 
 
-    var controller = Botkit.slackbot();
-    var bot = controller.spawn({
+    var slackController = Botkit.slackbot();
+    var slackBotSpawn = slackController.spawn({
       token: process.env.token
     });
     
-    var slackBot = new builder.SlackBot(controller, bot);
+    var slackBot = new builder.SlackBot(slackController, slackBotSpawn);
     slackBot.add('/', commands);
     
     slackBot.listenForMentions();
     
-    bot.startRTM(function(err,bot,payload) {
+    slackBotSpawn.startRTM(function(err,slackBotSpawn,payload) {
     if (err) {
         throw new Error('Could not connect to Slack');
     }
