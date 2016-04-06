@@ -93,7 +93,7 @@ if (process.env.port || DEBUG){
             var msg = "A message for you:" + query.msg;
             builder.DialogAction.send(msg);
             console.log("slackBot", slackBot.bot);
-            slackBot.bot.send(msg);
+            slackBot.bot.say(msg);
             res.send("A message for you:" + msg);
         } else {
             res.send('No msg...');
