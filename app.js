@@ -89,9 +89,14 @@ if (process.env.port || DEBUG){
     server.get('/ext', function(req, res, next) {
         var query = url.parse(req.url,true).query;
         console.log('params', query)
-        var msg = query.msg;
-        builder.DialogAction.send("A message for you:" + msg);
-        res.send("A message for you:" + msg);
+            if (query.msg){
+            var msg = "A message for you:" + query.msg;
+            builder.DialogAction.send(msg);
+            slackBot.send(msg);
+            res.send("A message for you:" + msg);
+        } else {
+            res.send('No msg...');
+        }
         next();
     });
 
