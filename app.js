@@ -1,5 +1,6 @@
 var restify = require('restify');
 var builder = require('botbuilder');
+var Botkit = require('botkit');
 var prompts = require('./prompts');
 
 // Create bot and add dialogs
