@@ -50,6 +50,40 @@ bot.use(function (session, next) {
     }
 });
 
+var events = ['error',
+'reply',
+'send',
+'quit',
+'Message',
+'DeleteUserData',
+'BotAddedToConversation',
+'BotRemovedFromConversation',
+'UserAddedToConversation',
+'UserRemovedFromConversation',
+'EndOfConversation'];
+
+events.forEach(function(name){
+    bot.on(name,function(messageEvent){
+        console.log('EVENT: ' + name, messageEvent);
+    })    
+});
+
+
+
+var chatRooms = [];
+function addRoom(session){
+    var room = {};
+    room.to = session.message.from;
+    room.from = session.message.to;
+}
+
+
+// Add notification dialog
+bot.add('/notify', function (session, msg) {
+   session.send("External message '%s'.", alarm.title);
+   session.endDialog(); // <= we don't want replies coming to us 
+});
+
 
 // Setup Restify Server
 if (process.env.port || DEBUG){
@@ -100,6 +134,7 @@ if (process.env.port || DEBUG){
             //bot.send(msg);
             //slackBot.bot.say(msg);
             //bot.beginDialog(address: IBeginDialogAddress, dialogId: string, dialogArgs?: any): void
+            //bot.beginDialog({ from: alarm.from, to: alarm.to }, '/notify', msg);
             res.send("A message for you:" + msg);
         } else {
             res.send('No msg...');
