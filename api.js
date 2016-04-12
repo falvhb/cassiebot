@@ -1,6 +1,7 @@
 var FeedParser = require('feedparser');
 var http = require("http");
 var moment = require('moment');
+moment.locale('de');
 var Q = require('Q');
 
 var FEEDS = {
@@ -70,15 +71,15 @@ api.readFeed = function (source, id) {
     var feedparser = new FeedParser();
 
     function reply() {
-      console.log('Items found:' + items.length);
+      //console.log('Items found:' + items.length);
 
       items.sort(function (a, b) {
         return b.date - a.date;
       })
 
-      items.forEach(function (item) {
-        console.log(item.ago);
-      })
+      //items.forEach(function (item) {
+        //console.log(item.ago);
+      //})
 
       deferred.resolve(items.slice(0, 5));
     }
@@ -87,7 +88,7 @@ api.readFeed = function (source, id) {
 
     feedparser.on('error', function (err) {
       if (err) {
-        console.log(err, err.stack);
+        //console.log(err, err.stack);
         reply();
       }
 
@@ -103,7 +104,7 @@ api.readFeed = function (source, id) {
     feedparser.on('end', function () {
       //console.log('Articles fetched for feed "' + feedId + '":'  + staging[feedId].length);
       //stagingToLatest(feedId);
-      console.log('Done.')
+      //console.log('Done.')
       reply();
     });
 

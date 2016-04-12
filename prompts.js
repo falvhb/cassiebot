@@ -1,6 +1,6 @@
 module.exports = {
     helpMessage: 'Hilfe:\n\n' +
-    '* *recent* - Die letzten Artikel anzeigen\n',
+    '* *updates* - Die 5 letzten Artikel anzeigen\n',
     saveTaskCreated: 'Created a new task no. %(index)d: %(task)s',
     saveTaskMissing: 'You need to tell me what the new task should be. For example: "new Remember the milk"',
     listTaskList: 'Tasks:\n%s',
