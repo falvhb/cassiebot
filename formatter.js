@@ -2,13 +2,14 @@ var formatter = {};
 
 formatter.toText = function(data){
 	var text = '';
+	var i = 0;
 	function addLine(line){
-		text += line + '\n';
+		text += line + '\n\n';
 	}
 	
+	addLine('*Hier sind die fünf neusten Artikel:*')
 	data.forEach(function(row){
-		addLine(row.overline + ': ' + row.title);
-		addLine(row.link + ' (' + row.ago + ')');
+		addLine(++i + '. ' + row.overline + ': ' + row.title + ' <' + row.link + '|Artikel öffnen>' + ' _(' + row.ago + ')_');
 		addLine('');
 	});
 	
