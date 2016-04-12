@@ -30,7 +30,7 @@ var commands = new builder.CommandDialog()
     .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
-            session.send('Recent Updates: ' + formatter.toText(data));
+            session.send(formatter.toText(data));
         });        
     })     
     .onBegin(function (session, args, next) {
@@ -51,6 +51,11 @@ bot.use(function (session, next) {
     } else if (/^\/log off/i.test(session.message.text)) {
         session.userData.isLogging = false;
         session.send('Logging is now turned off');
+    } else if (/^\/recent/i.test(session.message.text)) {
+        api.readFeed('wiwo', 'recent').then(function(data){
+            //console.log('Got', data);
+            session.send(formatter.toText(data));
+        });  
     } else {
         if (session.userData.isLogging) {
             console.log('Message Received: ', session.message.text);

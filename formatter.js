@@ -7,9 +7,9 @@ formatter.toText = function(data){
 		text += line + '\n\n';
 	}
 	
-	addLine('*Hier sind die fünf neusten Artikel:*')
+	addLine('**Hier sind die fünf neusten Artikel:**')
 	data.forEach(function(row){
-		addLine(++i + '. ' + row.overline + ': ' + row.title + ' <' + row.link + '|Artikel öffnen>' + ' _(' + row.ago + ')_');
+		addLine(++i + '. ' + row.overline + ': ' + row.title + ' [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*');
 		addLine('');
 	});
 	
