@@ -4,6 +4,9 @@ var Botkit = require('botkit');
 var prompts = require('./prompts');
 var url = require('url');
 
+var api = require('./api');
+var formatter = require('./formatter');
+
 // Create bot and add dialogs
 var DEBUG = false;
 
@@ -24,6 +27,12 @@ var commands = new builder.CommandDialog()
     //.matches('^(?:new|save|create|add)(?: (.+))?', saveTask)
     //.matches('^(?:done|delete|finish|remove)(?: (\\d+))?', finishTask)
     //.matches('^(list|show|tasks)', listTasks)
+    .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
+        api.readFeed('wiwo', 'recent').then(function(data){
+            //console.log('Got', data);
+            session.send('Recent Updates: ' + formatter.toText(data));
+        });        
+    })     
     .onBegin(function (session, args, next) {
         session.send('Hello World');
     })  
