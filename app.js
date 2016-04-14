@@ -62,8 +62,10 @@ dialog.on('bot.search',
                } else {
                     session.send("Suche nach '%s' hat leider nichts erbracht... Sorry.", searchTerm.entity);
                }
-           }) 
-           session.send("Suche nach '%s'... theoretisch!", searchTerm.entity);
+           }).catch(function(err){
+               session.send("Fehler bei der Suche nach '%s'. ärgerlich...", searchTerm.entity);
+           })
+           
         }
     }
 );

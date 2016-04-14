@@ -25,8 +25,8 @@ function parseItem(item) {
 
 search.doSearch = function(searchTerm){
   var deferred = Q.defer();
-  
-Bing.news(searchTerm + " site:wiwo.de", {
+    console.log('doSearch>start');
+    Bing.news(searchTerm + " site:wiwo.de", {
 		top: 5,  // Number of results (max 15)
 		skip: 0,   // Skip first 3 results
 		newsSortBy: "Date", //Choices are: Date, Relevance
@@ -34,17 +34,18 @@ Bing.news(searchTerm + " site:wiwo.de", {
 		options: ['EnableHighlighting']
 	}, function(error, res, body){
 		if (error){
-			console.log('Error:', error);
+			console.log('doSearch>Error:', error);
             deferred.reject({status: error});
-		}
-		if (body && body.d && body.d.results){
-            var items = [];
-            body.d.results.forEach(function(item){
-                items.push(parseItem(item));
-            })
-            deferred.resolve(items);
-        } else {
-            deferred.reject({status: 'no results'});
+		} else {
+            if (body && body.d && body.d.results){
+                var items = [];
+                body.d.results.forEach(function(item){
+                    items.push(parseItem(item));
+                })
+                deferred.resolve(items);
+            } else {
+                deferred.reject({status: 'no results'});
+            }
         }
 	});	
 
