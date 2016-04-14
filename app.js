@@ -41,7 +41,7 @@ dialog.on('bot.news.hot', function (session, args) {
 });
 
 dialog.on('bot.static.hi', function (session, args) {
-        session.send('Hi there');
+        session.send('Hallo da draußen.');
 });
 
 
@@ -51,39 +51,19 @@ dialog.on('bot.search',
         var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
         console.log('Search Term', searchTerm);
         if (!searchTerm) {
-           session.send('Search term not recoginzed. Try "search ???"');
+           session.send('Ich habe versucht eine Suche durchzuführen, aber keinen Suchbegriff gefunden. Nutze "Suche ???"');
         } else {
-           session.send("Searching for '%s'... theoretically!", searchTerm.entity);
+           session.send("Suche nach '%s'... theoretisch!", searchTerm.entity);
         }
     }
 );
-
-var commands = new builder.CommandDialog()
-    .matches('^(hello|hi|howdy|help)', builder.DialogAction.send(prompts.helpMessage))
-    //.matches('^(?:new|save|create|add)(?: (.+))?', saveTask)
-    //.matches('^(?:done|delete|finish|remove)(?: (\\d+))?', finishTask)
-    //.matches('^(list|show|tasks)', listTasks)
-    .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
-        api.readFeed('wiwo', 'recent').then(function(data){
-            //console.log('Got', data);
-            session.send(formatter.toText(data));
-        });        
-    });
-    
-    
-commands.onBegin(function (session, args, next) {
-    session.send('Hello World');
-})  
-commands.onDefault(function(session, args){
-    session.send("I'm sorry. I didn't understand: " + session.message.text);   
-});
-    
-    
+ 
 dialog.onBegin(function (session, args, next) {
-    session.send('Hello World');
-})  
+    session.send('Hallo Welt!');
+});  
+
 dialog.onDefault(function(session, args){
-    session.send("I'm sorry. I didn't understand: " + session.message.text);   
+    session.send("Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text);   
 });
 
 
@@ -142,6 +122,28 @@ function addRoom(session){
 bot.add('/notify', function (session, msg) {
    session.send("External message '%s'.", alarm.title);
    session.endDialog(); // <= we don't want replies coming to us 
+});
+
+
+
+var commands = new builder.CommandDialog()
+    .matches('^(hello|hi|howdy|help)', builder.DialogAction.send(prompts.helpMessage))
+    //.matches('^(?:new|save|create|add)(?: (.+))?', saveTask)
+    //.matches('^(?:done|delete|finish|remove)(?: (\\d+))?', finishTask)
+    //.matches('^(list|show|tasks)', listTasks)
+    .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
+        api.readFeed('wiwo', 'recent').then(function(data){
+            //console.log('Got', data);
+            session.send(formatter.toText(data));
+        });        
+    });
+    
+    
+commands.onBegin(function (session, args, next) {
+    session.send('Hello World');
+})  
+commands.onDefault(function(session, args){
+    session.send("I'm sorry. I didn't understand: " + session.message.text);   
 });
 
 
