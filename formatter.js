@@ -9,7 +9,7 @@ formatter.toText = function(data, title){
 	
 	addLine('**'+title+':**')
 	data.forEach(function(row){
-		addLine(++i + '. ' + row.overline + ': ' + row.title + ' - [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*');
+		addLine(++i + '. ' + row.overline.trim() + ': ' + row.title + ' - [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*');
 		addLine('');
 	});
 	

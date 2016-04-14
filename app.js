@@ -29,14 +29,14 @@ var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/applic
 dialog.on('bot.news.recent', function (session, args) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data), 'Hier sind die fünf neusten Artikel');
+            session.send(formatter.toText(data, 'Hier sind die fünf neusten Artikel'));
         });
 });
 
 dialog.on('bot.news.hot', function (session, args) {
         api.readFeed('wiwo', 'clicks').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data), 'Hier sind die fünf am meisten lesenen Artikel');
+            session.send(formatter.toText(data, 'Hier sind die fünf am meisten lesenen Artikel'));
         });
 });
 
