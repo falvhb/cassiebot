@@ -5,6 +5,8 @@ var prompts = require('./prompts');
 var url = require('url');
 
 var api = require('./api');
+var search = require('./search');
+
 var formatter = require('./formatter');
 
 // Create bot and add dialogs
@@ -29,14 +31,14 @@ var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/applic
 dialog.on('bot.news.recent', function (session, args) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data, 'Hier sind die fünf neusten Artikel'));
+            session.send(formatter.toLinkList(data, 'Hier sind die fünf neusten Artikel'));
         });
 });
 
 dialog.on('bot.news.hot', function (session, args) {
         api.readFeed('wiwo', 'clicks').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data, 'Hier sind die fünf am meisten lesenen Artikel'));
+            session.send(formatter.toLinkList(data, 'Hier sind die fünf am meisten lesenen Artikel'));
         });
 });
 
@@ -53,6 +55,14 @@ dialog.on('bot.search',
         if (!searchTerm) {
            session.send('Ich habe versucht eine Suche durchzuführen, aber keinen Suchbegriff gefunden. Nutze "Suche ???"');
         } else {
+           search.doSearch(searchTerm.entity).then(function(data){
+               console.log('search_result', data);
+               if (data.length){
+                    session.send(formatter.toSearchResultsList(data, searchTerm.entity))
+               } else {
+                    session.send("Suche nach '%s' hat leider nichts erbracht... Sorry.", searchTerm.entity);
+               }
+           }) 
            session.send("Suche nach '%s'... theoretisch!", searchTerm.entity);
         }
     }
@@ -80,7 +90,7 @@ bot.use(function (session, next) {
     } else if (/^\/recent/i.test(session.message.text)) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data));
+            session.send(formatter.toLinkList(data));
         });  
     } else {
         if (session.userData.isLogging) {
@@ -134,7 +144,7 @@ var commands = new builder.CommandDialog()
     .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data));
+            session.send(formatter.toLinkList(data));
         });        
     });
     
