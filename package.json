@@ -13,6 +13,7 @@
     "botkit": "0.0.15",
     "feedparser": "^1.1.4",
     "moment": "^2.12.0",
+    "node-bing-api": "^2.4.0",
     "q": "^1.4.1",
     "restify": "^4.0.4"
   }
