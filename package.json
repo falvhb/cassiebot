@@ -15,6 +15,9 @@
     "moment": "^2.12.0",
     "node-bing-api": "^2.4.0",
     "q": "^1.4.1",
-    "restify": "^4.0.4"
+    "request": "^2.71.0",
+    "restify": "^4.0.4",
+    "underscore": "^1.8.3",
+    "url": "^0.11.0"
   }
 }

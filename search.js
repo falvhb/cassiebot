@@ -2,7 +2,8 @@ var Q = require('Q');
 var moment = require('moment');
 moment.locale('de');
 //TODO remove key
-var Bing = require('node-bing-api')({ accKey: process.env.bingKey    });
+var Bing = require('node-bing-api')({ accKey: process.env.bingKey });
+var Bing = require('./bing')({ accKey: process.env.bingKey });
 
 var search = {};
 
@@ -30,6 +31,8 @@ search.doSearch = function(searchTerm){
 		top: 5,  // Number of results (max 15)
 		skip: 0,   // Skip first 3 results
 		newsSortBy: "Date", //Choices are: Date, Relevance
+        //https://api.datamarket.azure.com/Bing/Search/v1/Composite?Sources=%27web%27&Query=%27angela%20merkel%27&Market=%27de-DE%27
+        market: "de-DE",
 		//newsLocationOverride: "de-de", // Only for en-US market
 		options: ['EnableHighlighting']
 	}, function(error, res, body){
