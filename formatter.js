@@ -38,11 +38,11 @@ formatter.toSearchResultsList = function(data, searchTerm){
 	addLine('** Suchergebnisse für: '+searchTerm+':**');
 	data.forEach(function(row){
 		addLine(++i + '. ' + row.title + ' - [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*');
-		addLine('> ' + ReplaceHighlightingCharacters(row.summary, '**', '**'));
+		addLine('> ' + ReplaceHighlightingCharacters(row.summary, '`', '`'));
         addLine('');
 	});
     addLine('');
-	addLine('* powered by [Bing](http://www.bing.de) *');
+	addLine('*- Suche powered by [Bing](http://www.bing.de)*');
     
 	return text;
 }
