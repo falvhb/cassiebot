@@ -37,6 +37,7 @@ search.doSearch = function(searchTerm){
 			console.log('doSearch>Error:', error);
             deferred.reject({status: error});
 		} else {
+            console.log('doSearch>body', body);
             if (body && body.d && body.d.results){
                 var items = [];
                 body.d.results.forEach(function(item){
