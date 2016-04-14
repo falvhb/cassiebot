@@ -29,25 +29,30 @@ var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/applic
 dialog.on('bot.news.recent', function (session, args) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data));
+            session.send(formatter.toText(data), 'Hier sind die fünf neusten Artikel');
         });
 });
 
 dialog.on('bot.news.hot', function (session, args) {
         api.readFeed('wiwo', 'clicks').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toText(data));
+            session.send(formatter.toText(data), 'Hier sind die fünf am meisten lesenen Artikel');
         });
 });
+
+dialog.on('bot.static.hi', function (session, args) {
+        session.send('Hi there');
+});
+
 
 
 dialog.on('bot.search', 
     function (session, args) {
-        var task = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
-        if (!task) {
-            session.send("Searching for '%s'....", task);
+        var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
+        if (!searchTerm) {
+           session.send('Search term not recoginzed. Try "search ???"');
         } else {
-            session.send('Search term not recoginzed. Try "search ???"');
+           session.send("Searching for '%s'... theoretically!", searchTerm);
         }
     }
 );

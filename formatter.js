@@ -1,13 +1,13 @@
 var formatter = {};
 
-formatter.toText = function(data){
+formatter.toText = function(data, title){
 	var text = '';
 	var i = 0;
 	function addLine(line){
 		text += line + '\n\n';
 	}
 	
-	addLine('**Hier sind die fünf neusten Artikel:**')
+	addLine('**'+title+':**')
 	data.forEach(function(row){
 		addLine(++i + '. ' + row.overline + ': ' + row.title + ' - [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*');
 		addLine('');
