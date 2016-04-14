@@ -49,10 +49,11 @@ dialog.on('bot.static.hi', function (session, args) {
 dialog.on('bot.search', 
     function (session, args) {
         var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
+        console.log('Search Term', searchTerm);
         if (!searchTerm) {
            session.send('Search term not recoginzed. Try "search ???"');
         } else {
-           session.send("Searching for '%s'... theoretically!", searchTerm);
+           session.send("Searching for '%s'... theoretically!", searchTerm.entity);
         }
     }
 );
