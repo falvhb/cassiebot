@@ -52,17 +52,25 @@ dialog.on('bot.search',
     }
 );
 
-// var commands = new builder.CommandDialog()
-//     .matches('^(hello|hi|howdy|help)', builder.DialogAction.send(prompts.helpMessage))
-//     //.matches('^(?:new|save|create|add)(?: (.+))?', saveTask)
-//     //.matches('^(?:done|delete|finish|remove)(?: (\\d+))?', finishTask)
-//     //.matches('^(list|show|tasks)', listTasks)
-//     .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
-//         api.readFeed('wiwo', 'recent').then(function(data){
-//             //console.log('Got', data);
-//             session.send(formatter.toText(data));
-//         });        
-//     });
+var commands = new builder.CommandDialog()
+    .matches('^(hello|hi|howdy|help)', builder.DialogAction.send(prompts.helpMessage))
+    //.matches('^(?:new|save|create|add)(?: (.+))?', saveTask)
+    //.matches('^(?:done|delete|finish|remove)(?: (\\d+))?', finishTask)
+    //.matches('^(list|show|tasks)', listTasks)
+    .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
+        api.readFeed('wiwo', 'recent').then(function(data){
+            //console.log('Got', data);
+            session.send(formatter.toText(data));
+        });        
+    });
+    
+    
+commands.onBegin(function (session, args, next) {
+    session.send('Hello World');
+})  
+commands.onDefault(function(session, args){
+    session.send("I'm sorry. I didn't understand: " + session.message.text);   
+});
     
     
 dialog.onBegin(function (session, args, next) {
