@@ -4,12 +4,27 @@ var moment = require('moment');
 moment.locale('de');
 var Q = require('Q');
 
+
+var CONST = {
+  RSS: 'http://www.wiwo.de/contentexport/feed/rss/',
+  DOMAIN: {
+    wiwo: 'www.wiwo.de' 
+  }
+};
+
 var FEEDS = {
   wiwo: {
-    domain: 'www.wiwo.de',
-    recent: 'http://www.wiwo.de/contentexport/feed/rss/schlagzeilen'
+    recent: CONST.RSS + 'schlagzeilen',
+    social: CONST.RSS + 'test_meistgeteilt',
+    clicks: CONST.RSS + 'test_meistgeklickt',
+    unternehmen: CONST.RSS + 'unternehmen',
+    finanzen: CONST.RSS + 'finanzen',
+    politik: CONST.RSS + 'politk',
+    erfolg: CONST.RSS + 'erfolg',
+    techonolgie: CONST.RSS + 'technologie',
+    green:'http://green.wiwo.de/feed/'
   }
-}
+};
 
 var api = {};
 
@@ -56,15 +71,17 @@ api.readFeed = function (source, id) {
       port: 80,
       path: feedPath,
       headers: {
-        Host: FEEDS[source].domain
+        Host: CONST.DOMAIN[source]
       }
     };
   } else {
     options = {
-      host: FEEDS[source].domain,
+      host: CONST.DOMAIN[source],
       path: feedPath
     };
   }
+
+  console.log('Options:', options);
 
   http.get(options, function (res) {
     var items = [];
@@ -113,8 +130,16 @@ api.readFeed = function (source, id) {
   return deferred.promise;
 }
 
-// api.readFeed('wiwo', 'recent').then(function(data){
-//   console.log('Got', data);
-// });
 
-module.exports = api;
+if (require.main === module) {
+  var feed;
+  for (var x in FEEDS.wiwo){
+    feed = FEEDS.wiwo[x];
+    console.log('FEED ', x, feed)
+    api.readFeed('wiwo', 'recent').then(function(data){
+      console.log('Got', data);
+    });
+  }
+} else {
+    module.exports = api;
+}

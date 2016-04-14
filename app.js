@@ -21,27 +21,59 @@ if (process.env.port || DEBUG){
     var bot = new builder.TextBot();
 }
 
+var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/application?id=3a505278-4c2c-4d3b-bdb5-43c4de6cc83e&subscription-key=' + process.env.luisKey);
 
-var commands = new builder.CommandDialog()
-    .matches('^(hello|hi|howdy|help)', builder.DialogAction.send(prompts.helpMessage))
-    //.matches('^(?:new|save|create|add)(?: (.+))?', saveTask)
-    //.matches('^(?:done|delete|finish|remove)(?: (\\d+))?', finishTask)
-    //.matches('^(list|show|tasks)', listTasks)
-    .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
+// bot.news.recent
+// bot.news.hot clicks
+
+dialog.on('bot.news.recent', function (session, args) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
             session.send(formatter.toText(data));
-        });        
-    })     
-    .onBegin(function (session, args, next) {
-        session.send('Hello World');
-    })  
-    .onDefault(function(session, args){
-        session.send("I'm sorry. I didn't understand: " + session.message.text);   
-    });
+        });
+});
+
+dialog.on('bot.news.hot', function (session, args) {
+        api.readFeed('wiwo', 'clicks').then(function(data){
+            //console.log('Got', data);
+            session.send(formatter.toText(data));
+        });
+});
 
 
-bot.add('/', commands);
+dialog.on('bot.search', 
+    function (session, args) {
+        var task = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
+        if (!task) {
+            session.send("Searching for '%s'....", task);
+        } else {
+            session.send('Search term not recoginzed. Try "search ???"');
+        }
+    }
+);
+
+// var commands = new builder.CommandDialog()
+//     .matches('^(hello|hi|howdy|help)', builder.DialogAction.send(prompts.helpMessage))
+//     //.matches('^(?:new|save|create|add)(?: (.+))?', saveTask)
+//     //.matches('^(?:done|delete|finish|remove)(?: (\\d+))?', finishTask)
+//     //.matches('^(list|show|tasks)', listTasks)
+//     .matches('.*(recent|updates|latest|newest|new).*',function (session, args, next) {
+//         api.readFeed('wiwo', 'recent').then(function(data){
+//             //console.log('Got', data);
+//             session.send(formatter.toText(data));
+//         });        
+//     });
+    
+    
+dialog.onBegin(function (session, args, next) {
+    session.send('Hello World');
+})  
+dialog.onDefault(function(session, args){
+    session.send("I'm sorry. I didn't understand: " + session.message.text);   
+});
+
+
+bot.add('/', dialog);
 
 // Install logging middleware
 bot.use(function (session, next) {
