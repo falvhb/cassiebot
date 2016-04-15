@@ -37,12 +37,12 @@ formatter.toSearchResultsList = function(data, searchTerm){
 	
 	addLine('** Suchergebnisse für: '+searchTerm+':**');
 	data.forEach(function(row){
-		addLine(++i + '. [' + row.title + '](' + row.link + ') *' + row.ago + '*');
+		addLine(++i + '. [' + ReplaceHighlightingCharacters(row.title, ' **', '** ') + '](' + row.link + ') *' + row.ago + '*');
 		addLine('> ' + ReplaceHighlightingCharacters(row.summary, ' **', '** '));
         addLine('');
 	});
     addLine('');
-	addLine('*- Suchergebnisse von [Bing](http://www.bing.de?q='+searchTerm+')*');
+	addLine('*- Suchergebnisse von [Bing](http://www.bing.de?q='+encodeURIComponent(searchTerm+' site:wiwo.de')+')*');
     
 	return text;
 }
