@@ -21,7 +21,7 @@ formatter.toLinkList = function(data, title){
 	
 	addLine('**'+title+':**')
 	data.forEach(function(row){
-		addLine(++i + '. [' + row.overline.trim() + ': ' + row.title + '](' + row.link + ')' + ' *' + row.ago + '*');
+		addLine(++i + '. ' + row.overline.trim() + ': ' + row.title + ' - [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*');
 		addLine('');
 	});
 	
@@ -37,7 +37,7 @@ formatter.toSearchResultsList = function(data, searchTerm){
 	
 	addLine('** Suchergebnisse für: '+searchTerm+':**');
 	data.forEach(function(row){
-		addLine(++i + '. ' + row.title + ' - [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*');
+		addLine(++i + '. [' + row.title + '](' + row.link + ') *' + row.ago + '*');
 		addLine('> ' + ReplaceHighlightingCharacters(row.summary, ' **', '** '));
         addLine('');
 	});
