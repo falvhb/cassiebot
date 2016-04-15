@@ -1,9 +1,10 @@
 var restify = require('restify');
 var builder = require('botbuilder');
 var Botkit = require('botkit');
-var prompts = require('./prompts');
+var sprintf = require("sprintf-js").sprintf
 var url = require('url');
 
+var prompts = require('./prompts');
 var api = require('./api');
 var search = require('./search');
 
@@ -11,6 +12,14 @@ var formatter = require('./formatter');
 
 // Create bot and add dialogs
 var DEBUG = false;
+
+
+function sende(session, text){
+    session.send({
+        "language": session.message.sourceLanguage || session.message.language,
+        "text": text
+    });
+}
 
 
 if (process.env.port || DEBUG){
@@ -31,19 +40,19 @@ var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/applic
 dialog.on('bot.news.recent', function (session, args) {
         api.readFeed('wiwo', 'recent').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toLinkList(data, 'Hier sind die fünf neusten Artikel'));
+            sende(session, formatter.toLinkList(data, 'Hier sind die fünf neusten Artikel'));
         });
 });
 
 dialog.on('bot.news.hot', function (session, args) {
         api.readFeed('wiwo', 'clicks').then(function(data){
             //console.log('Got', data);
-            session.send(formatter.toLinkList(data, 'Hier sind die fünf am meisten lesenen Artikel'));
+            sende(session, formatter.toLinkList(data, 'Hier sind die fünf am meisten lesenen Artikel'));
         });
 });
 
 dialog.on('bot.static.hi', function (session, args) {
-        session.send('Hallo da draußen.');
+        sende(session, 'Hallo da draußen.');
 });
 
 
@@ -53,17 +62,17 @@ dialog.on('bot.search',
         var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
         console.log('Search Term', searchTerm);
         if (!searchTerm) {
-           session.send('Ich habe versucht eine Suche durchzuführen, aber keinen Suchbegriff gefunden. Nutze "Suche ???"');
+           sende(session, 'Ich habe versucht eine Suche durchzuführen, aber keinen Suchbegriff gefunden. Nutze "Suche..."');
         } else {
            search.doSearch(searchTerm.entity).then(function(data){
                console.log('search_result', data);
                if (data.length){
-                    session.send(formatter.toSearchResultsList(data, searchTerm.entity))
+                    sende(session, formatter.toSearchResultsList(data, searchTerm.entity));
                } else {
-                    session.send("Suche nach '%s' hat leider nichts erbracht... Sorry.", searchTerm.entity);
+                    sende(session, sprintf("Suche nach '%s' hat leider nichts erbracht... Sorry.", searchTerm.entity));
                }
            }).catch(function(err){
-               session.send("Fehler bei der Suche nach '%s'. ärgerlich...", searchTerm.entity);
+               sende(session, sprintf("Fehler bei der Suche nach '%s'. ärgerlich...", searchTerm.entity));
            })
            
         }
@@ -71,11 +80,11 @@ dialog.on('bot.search',
 );
  
 dialog.onBegin(function (session, args, next) {
-    session.send('Hallo Welt!');
+    sende(session, 'Hallo Welt!');
 });  
 
 dialog.onDefault(function(session, args){
-    session.send("Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text);   
+    sende(session, "Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text);   
 });
 
 
