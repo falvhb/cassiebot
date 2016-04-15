@@ -5,8 +5,8 @@ function ReplaceHighlightingCharacters(text, beginStr, endStr)
     // Replace all occurrences of U+E000 (begin highlighting) with
     // beginStr. Replace all occurrences of U+E001 (end highlighting)
     // with endStr.
-    var regexBegin = new RegExp("\uE000", "g");
-    var regexEnd = new RegExp("\uE001", "g");
+    var regexBegin = new RegExp("\uE000", " **");
+    var regexEnd = new RegExp("\uE001", "** ");
             
     return text.replace(regexBegin, beginStr).replace(regexEnd, endStr);
 }
