@@ -9,7 +9,7 @@
   "author": "Federico Elles <federicoplus@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "botbuilder": "^0.6.5",
+    "botbuilder": "^0.9.0",
     "botkit": "0.0.15",
     "feedparser": "^1.1.4",
     "moment": "^2.12.0",

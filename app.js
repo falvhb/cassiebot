@@ -9,16 +9,21 @@ var api = require('./api');
 var search = require('./search');
 
 var formatter = require('./formatter');
+var texting = require('./texting');
 
 // Create bot and add dialogs
 var DEBUG = false;
 
 
 function sende(session, text){
-    session.send({
-        "language": session.message.sourceLanguage || session.message.language,
-        "text": text
-    });
+    var msg = new builder.Message();
+    msg.setLanguage(session.message.sourceLanguage || session.message.language);
+    msg.setText(session, text);
+    session.send(msg);
+    // session.send({
+    //     "language": session.message.sourceLanguage || session.message.language,
+    //     "text": text
+    // });
 }
 
 
@@ -52,7 +57,7 @@ dialog.on('bot.news.hot', function (session, args) {
 });
 
 dialog.on('bot.static.hi', function (session, args) {
-        sende(session, 'Hallo da draußen.');
+        sende(session, texting.static('hello'));
 });
 
 
