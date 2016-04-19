@@ -56,8 +56,25 @@ dialog.on('bot.news.hot', function (session, args) {
         });
 });
 
-dialog.on('bot.static.hi', function (session, args) {
-        sende(session, texting.static('hello'));
+// dialog.on('bot.static.hi', function (session, args) {
+//         sende(session, texting.static('hello'));
+// });
+
+texting.onReady(function(intents){
+    intents.forEach(function(intent){
+       var aIntent = intent.split('.');
+       switch (aIntent[0]){
+          case 'static':
+            dialog.on('bot.static.' + aIntent[1], function (session, args) {
+                sende(session, texting.static(aIntent[1]));
+            });          
+            break;
+          default:
+            console.warn('Not action for intent: ' + intent + ' available');  
+       }
+    });
+    
+     
 });
 
 

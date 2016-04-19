@@ -53,13 +53,40 @@ function loadXls(cb){
   }
 }
 
+var flagLibReady = false;
+var cbOnReady;
+
 loadXls(function(lib){
   //console.log(data);
   data = lib;
-  console.log('Texting ready');
+  console.log('Texting ready', lib);
+  flagLibReady = true;
+  execLibReady();
 });
 
+function execLibReady(){
+  if (flagLibReady && data){
+    var allIntents = [];
+    for (var x in data){
+      allIntents.push(x);
+    }
+    cbOnReady(allIntents);
+  }
+};
 
+/**
+ * Callback once xls lib is ready
+ */
+
+texting.onReady = function(cb){
+  cbOnReady = cb;
+  execLibReady();
+}
+
+
+/**
+ * Returns any array of replies
+ */
 texting.get = function(key){
   if (typeof data[key] !== 'undefined'){
     return data[key];
@@ -68,14 +95,15 @@ texting.get = function(key){
   }
 }
 
+/**
+ * Return a static array of replies
+ */
 texting.static = function(key){
   return texting.get('static.'+key);  
 }
 
 if (require.main === module) {
-
   //console.log('Texting', process.env.proxysrv);
-
 } else {
     module.exports = texting;
 }
