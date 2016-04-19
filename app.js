@@ -16,6 +16,9 @@ var DEBUG = false;
 
 
 function sende(session, text){
+    if (typeof text === 'string'){
+        text = [text];
+    }
     var msg = new builder.Message();
     msg.setLanguage(session.message.sourceLanguage || session.message.language);
     msg.setText(session, text);
