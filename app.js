@@ -45,26 +45,26 @@ var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/applic
 // bot.news.recent
 // bot.news.hot clicks
 
-dialog.on('bot.news.recent', function (session, args) {
-        api.readFeed('wiwo', 'recent').then(function(data){
-            //remember last articles
-            if (data.length){
-                var lastLinks = [];
-                data.forEach(function(item){
-                    lastLinks.push({title: item.title, link: item.link});
-                });
-                session.userData.lastLinks = lastLinks;
-            }
-            sende(session, formatter.toLinkList(data, 'Hier sind die fünf neusten Artikel'));
-        });
-});
+// dialog.on('bot.feed.recent', function (session, args) {
+//         api.readFeed('wiwo', 'recent').then(function(data){
+//             //remember last articles
+//             if (data.length){
+//                 var lastLinks = [];
+//                 data.forEach(function(item){
+//                     lastLinks.push({title: item.title, link: item.link});
+//                 });
+//                 session.userData.lastLinks = lastLinks;
+//             }
+//             sende(session, formatter.toLinkList(data, 'Hier sind die fünf neusten Artikel'));
+//         });
+// });
 
-dialog.on('bot.news.hot', function (session, args) {
-        api.readFeed('wiwo', 'clicks').then(function(data){
-            //console.log('Got', data);
-            sende(session, formatter.toLinkList(data, 'Hier sind die fünf am meisten lesenen Artikel'));
-        });
-});
+// dialog.on('bot.feed.hot', function (session, args) {
+//         api.readFeed('wiwo', 'hot').then(function(data){
+//             //console.log('Got', data);
+//             sende(session, formatter.toLinkList(data, 'Hier sind die fünf am meisten lesenen Artikel'));
+//         });
+// });
 
 // dialog.on('bot.static.hi', function (session, args) {
 //         sende(session, texting.static('hello'));
@@ -79,19 +79,39 @@ texting.onReady(function(intents){
         goodbyeMessage: texting.static('goodbye')
     }); 
     
-    /** Static intents */
+    
     intents.forEach(function(intent){
        var aIntent = intent.split('.');
        switch (aIntent[0]){
+           
+          /** Static intents */
           case 'static':
             dialog.on('bot.static.' + aIntent[1], function (session, args) {
                 sende(session, texting.static(aIntent[1]));
             });          
             break;
+           
+          /** Feeds  */
+          case 'feed':
+            dialog.on('bot.feed.' + aIntent[1], function (session, args) {
+                api.readFeed('wiwo', aIntent[1]).then(function(data){
+                    //remember last articles
+                    if (data.length){
+                        var lastLinks = [];
+                        data.forEach(function(item){
+                            lastLinks.push({title: item.title, link: item.link});
+                        });
+                        session.userData.lastLinks = lastLinks;
+                    }
+                    sende(session, formatter.toLinkList(data, texting.get(aIntent[1])));
+                });
+            });
+
           default:
-            console.warn('Not action for intent: ' + intent + ' available');  
+            console.warn('SYS> Not action for intent: ' + intent + ' available');  
        }
     });
+    
     
      
 });

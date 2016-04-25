@@ -16,7 +16,7 @@ var FEEDS = {
   wiwo: {
     recent: CONST.RSS + 'schlagzeilen',
     social: CONST.RSS + 'test_meistgeteilt',
-    clicks: CONST.RSS + 'test_meistgeklickt',
+    hot: CONST.RSS + 'test_meistgeklickt',
     unternehmen: CONST.RSS + 'unternehmen',
     finanzen: CONST.RSS + 'finanzen',
     politik: CONST.RSS + 'politk',
