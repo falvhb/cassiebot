@@ -86,6 +86,7 @@ texting.onReady(function(intents){
            
           /** Static intents */
           case 'static':
+            console.log('OK> ' + aIntent);
             dialog.on('bot.static.' + aIntent[1], function (session, args) {
                 sende(session, texting.static(aIntent[1]));
             });          
@@ -93,6 +94,7 @@ texting.onReady(function(intents){
            
           /** Feeds  */
           case 'feed':
+            console.log('OK> ' + aIntent);
             dialog.on('bot.feed.' + aIntent[1], function (session, args) {
                 api.readFeed('wiwo', aIntent[1]).then(function(data){
                     //remember last articles
@@ -106,9 +108,10 @@ texting.onReady(function(intents){
                     sende(session, formatter.toLinkList(data, texting.get(aIntent[1])));
                 });
             });
+            break;
 
           default:
-            console.warn('SYS> Not action for intent: ' + intent + ' available');  
+            console.warn('SYS> Not action for intent: ' + intent[0] + ' available');  
        }
     });
     
