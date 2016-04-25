@@ -47,7 +47,14 @@ var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/applic
 
 dialog.on('bot.news.recent', function (session, args) {
         api.readFeed('wiwo', 'recent').then(function(data){
-            //console.log('Got', data);
+            //remember last articles
+            if (data.length){
+                var lastLinks = [];
+                data.forEach(function(item){
+                    lastLinks.push({title: item.title, link: item.link});
+                });
+                session.userData.lastLinks = lastLinks;
+            }
             sende(session, formatter.toLinkList(data, 'Hier sind die fünf neusten Artikel'));
         });
 });
