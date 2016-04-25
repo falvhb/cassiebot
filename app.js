@@ -33,8 +33,8 @@ function sende(session, text){
 if (process.env.port || DEBUG){
     var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
     bot.configure({
-        userWelcomeMessage: "Hello... Welcome to the group.",
-        goodbyeMessage: "Goodbye..."
+        userWelcomeMessage: "userWelcomeMessage",
+        goodbyeMessage: "goodbyeMessage"
     });        
 } else {
     var bot = new builder.TextBot();
@@ -71,6 +71,15 @@ dialog.on('bot.news.hot', function (session, args) {
 // });
 
 texting.onReady(function(intents){
+    
+    /** Defaults */
+    if (texting.static('welcome') && texting.static('goodbye'))
+    bot.configure({
+        userWelcomeMessage: texting.static('welcome'),
+        goodbyeMessage: texting.static('goodbye')
+    }); 
+    
+    /** Static intents */
     intents.forEach(function(intent){
        var aIntent = intent.split('.');
        switch (aIntent[0]){

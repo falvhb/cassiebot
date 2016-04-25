@@ -39,7 +39,9 @@ function loadXls(cb){
   
   if (process.env.proxysrv) {
     var body = fs.readFileSync('./spreadsheet.json').toString();
-    doCallback(body);
+    setTimeout(function(){
+      doCallback(body);  
+    }, 500);
   } else {  
     request.get(url, function (error, response, body) {
       if (!error && response.statusCode == 200) {
