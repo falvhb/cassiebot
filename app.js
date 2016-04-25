@@ -105,7 +105,7 @@ texting.onReady(function(intents){
                         });
                         session.userData.lastLinks = lastLinks;
                     }
-                    sende(session, formatter.toLinkList(data, texting.get(aIntent[1])));
+                    sende(session, formatter.toLinkList(data, texting.get(intent)));
                 });
             });
             break;
