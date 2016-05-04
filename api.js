@@ -2,7 +2,7 @@ var FeedParser = require('feedparser');
 var http = require("http");
 var moment = require('moment');
 moment.locale('de');
-var Q = require('Q');
+var Q = require('q');
 
 
 var CONST = {
