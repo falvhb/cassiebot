@@ -233,7 +233,7 @@ commands.onDefault(function(session, args){
 
 
 // Setup Restify Server
-if (process.env.port || DEBUG){
+if (process.env.port || process.env.PORT || DEBUG){
 
 
 
