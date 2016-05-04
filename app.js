@@ -238,23 +238,24 @@ if (process.env.PORT || process.env.port || DEBUG){
 
 
 
-
-    var slackController = Botkit.slackbot();
-    var slackBotSpawn = slackController.spawn({
-      token: process.env.token
-    });
-    
-    var slackBot = new builder.SlackBot(slackController, slackBotSpawn);
-    slackBot.add('/', commands);
-    
-    slackBot.listenForMentions();
-    
-    if (!DEBUG){
-        slackBotSpawn.startRTM(function(err,slackBotSpawn,payload) {
-            if (err) {
-                throw new Error('Could not connect to Slack');
-            }
+    if (process.env.token){
+        var slackController = Botkit.slackbot();
+        var slackBotSpawn = slackController.spawn({
+          token: process.env.token
         });
+        
+        var slackBot = new builder.SlackBot(slackController, slackBotSpawn);
+        slackBot.add('/', commands);
+        
+        slackBot.listenForMentions();
+        
+        if (!DEBUG){
+            slackBotSpawn.startRTM(function(err,slackBotSpawn,payload) {
+                if (err) {
+                    throw new Error('Could not connect to Slack');
+                }
+            });
+        }
     }
 
     /**
