@@ -1,4 +1,4 @@
-var Q = require('Q');
+var Q = require('q');
 var moment = require('moment');
 moment.locale('de');
 //TODO remove key
