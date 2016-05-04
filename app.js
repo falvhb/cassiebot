@@ -30,7 +30,7 @@ function sende(session, text){
 }
 
 
-if (process.env.port || process.env.PORT || DEBUG){
+if (process.env.PORT || process.env.port || DEBUG){
     var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
     bot.configure({
         userWelcomeMessage: "userWelcomeMessage",
@@ -233,7 +233,7 @@ commands.onDefault(function(session, args){
 
 
 // Setup Restify Server
-if (process.env.port || process.env.PORT || DEBUG){
+if (process.env.PORT || process.env.port || DEBUG){
 
 
 
@@ -289,7 +289,7 @@ if (process.env.port || process.env.PORT || DEBUG){
         next();
     });
 
-    server.listen(process.env.port || || process.env.PORT || 3978, function () {
+    server.listen(process.env.PORT || process.env.port || 3978, function () {
         console.log('%s listening to %s', server.name, server.url); 
     });
 
