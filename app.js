@@ -30,7 +30,7 @@ function sende(session, text){
 }
 
 
-if (process.env.port || || process.env.PORT || DEBUG){
+if (process.env.port || process.env.PORT || DEBUG){
     var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
     bot.configure({
         userWelcomeMessage: "userWelcomeMessage",
