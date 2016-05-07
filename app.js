@@ -10,12 +10,13 @@ var search = require('./search');
 
 var formatter = require('./formatter');
 var texting = require('./texting');
+var logging = require('./logging');
 
 // Create bot and add dialogs
 var DEBUG = false;
 
 
-function sende(session, text){
+function sende(session, text, intent){
     if (typeof text === 'string'){
         text = [text];
     }
@@ -23,6 +24,19 @@ function sende(session, text){
     msg.setLanguage(session.message.sourceLanguage || session.message.language);
     msg.setText(session, text);
     session.send(msg);
+    
+  logging.conversation({
+	"message_text": session.message.text,
+	"message_sourcetext": session.message.sourceText,
+	"message_language": session.message.language,
+	"message_sourcelanguage": session.message.sourceLanguage,
+	"reply_intent": intent,  
+	"reply_language": msg.language,
+	"reply_text": msg.text,
+	"channel": session.message.from ? session.message.from.channelId : 'No message.from',
+	"debug": "sendFunction"
+  });
+    
     // session.send({
     //     "language": session.message.sourceLanguage || session.message.language,
     //     "text": text
@@ -88,7 +102,7 @@ texting.onReady(function(intents){
           case 'static':
             console.log('OK> ' + aIntent);
             dialog.on('bot.static.' + aIntent[1], function (session, args) {
-                sende(session, texting.static(aIntent[1]));
+                sende(session, texting.static(aIntent[1]), 'bot.static.' + aIntent[1]);
             });          
             break;
            
@@ -105,7 +119,9 @@ texting.onReady(function(intents){
                         });
                         session.userData.lastLinks = lastLinks;
                     }
-                    sende(session, formatter.toLinkList(data, texting.get(intent)));
+                    sende(session,
+                          formatter.toLinkList(data, texting.get(intent)),
+                          'bot.feed.' + aIntent[1]);
                 });
             });
             break;
@@ -126,17 +142,23 @@ dialog.on('bot.search',
         var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
         console.log('Search Term', searchTerm);
         if (!searchTerm) {
-           sende(session, 'Ich habe versucht eine Suche durchzuführen, aber keinen Suchbegriff gefunden. Nutze "Suche..."');
+           sende(session,
+                 "Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text,
+                 'bot.search-NoSearchTerm');
         } else {
            search.doSearch(searchTerm.entity).then(function(data){
                console.log('search_result', data);
                if (data.length){
-                    sende(session, formatter.toSearchResultsList(data, searchTerm.entity));
+                    sende(session, formatter.toSearchResultsList(data, searchTerm.entity),'bot.search');
                } else {
-                    sende(session, sprintf("Suche nach '%s' hat leider nichts erbracht... Sorry.", searchTerm.entity));
+                    sende(session,
+                    sprintf("Suche nach '%s' hat leider nichts erbracht... Sorry.", searchTerm.entity),
+                    'bot.search');
                }
            }).catch(function(err){
-               sende(session, sprintf("Fehler bei der Suche nach '%s'. ärgerlich...", searchTerm.entity));
+               sende(session,
+                     sprintf("Fehler bei der Suche nach '%s'. ärgerlich...", searchTerm.entity),
+                     'bot.search');
            })
            
         }
@@ -144,11 +166,13 @@ dialog.on('bot.search',
 );
  
 dialog.onBegin(function (session, args, next) {
-    sende(session, 'Hallo Welt!');
+    sende(session, 'Hallo Welt!','onBegin');
 });  
 
 dialog.onDefault(function(session, args){
-    sende(session, "Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text);   
+    sende(session,
+          "Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text,
+          'onDefault');   
 });
 
 
