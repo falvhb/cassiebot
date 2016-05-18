@@ -199,7 +199,8 @@ dialog.on('bot.ressort.recent',
         var keywords = {
             'cooperation': 'unternehmen',
             'technology': 'technologie',
-            'politics': 'poltik',
+            'politics': 'politik',
+            'policy': 'politik',
             'success': 'erfolg',
             'finance': 'finanzen'
         };
