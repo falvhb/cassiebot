@@ -125,13 +125,24 @@ texting.onReady(function(intents){
                 });
             });
             break;
-
+            
+          //doesn't care about type - just confirms that intent was recognized
+          case 'temp':
+            console.log('OK> ' + aIntent);
+            dialog.on('bot.temp.' + aIntent[1], function (session, args) {
+                sende(session, texting.get(intent), 'bot.' + 'bot.temp.' + aIntent[1]);
+            });  
+          
+          case 'dynamic':
+            console.log('OK> ' + aIntent);
+            dialog.on('bot.dynamic.' + aIntent[1], function (session, args) {
+                sende(session, texting.dynamic(aIntent[1]), 'bot.' + intent);
+            });  
+            
           default:
             console.warn('SYS> Not action for intent: ' + intent[0] + ' available');  
        }
     });
-    
-    
      
 });
 
@@ -143,7 +154,7 @@ dialog.on('bot.search',
         console.log('Search Term', searchTerm);
         if (!searchTerm) {
            sende(session,
-                 "Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text,
+                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Search Term Missing]",
                  'bot.search-NoSearchTerm');
         } else {
            search.doSearch(searchTerm.entity).then(function(data){
@@ -164,6 +175,66 @@ dialog.on('bot.search',
         }
     }
 );
+
+dialog.on('bot.temp.feed.author.recent', 
+    function (session, args) {
+        var author = builder.EntityRecognizer.findEntity(args.entities, 'Author');
+        console.log('Author', author);
+        if (!author) {
+           sende(session,
+                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Author Missing]",
+                 'bot.temp.feed.author.recent-NoAuthor');
+        } else {
+            sende(session, sprintf(texting.get('temp.feed.author.recent').pop(), author.entity), 'bot.temp.feed.author.recent');
+            //TODO: Add query for author RSS feed
+        }
+    }
+);
+
+dialog.on('bot.ressort.recent', 
+    function (session, args) {
+        var ressort = builder.EntityRecognizer.findEntity(args.entities, 'Ressorts');
+        console.log('Ressort', ressort);
+        
+        var keywords = {
+            'cooperation': 'unternehmen',
+            'technology': 'technologie',
+            'politics': 'poltik',
+            'success': 'erfolg',
+            'finance': 'finanzen'
+        };
+        var found = false;
+        var ressortFound = '';
+        
+        for (var x in keywords){
+            if (!found && session.message.text.indexOf(x) > -1){
+                ressortFound = keywords[x];
+                found = true;
+            }
+        }
+        
+        if (!found) {
+           sende(session,
+                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Ressorts Missing]",
+                 'bot.ressort.recent-NoRessort');
+        } else {
+            sende(session, sprintf(texting.get('ressort.recent').pop(), 
+                ressortFound.charAt(0).toUpperCase() + ressortFound.slice(1)
+                ), 'bot.ressort.recent');
+            //TODO: Add query for author RSS feed
+        }
+         
+        /*if (!ressort) {
+           sende(session,
+                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Ressorts Missing]",
+                 'bot.ressort.recent-NoRessort');
+        } else {
+            sende(session, sprintf(texting.get('ressort.recent').pop(), ressort.entity), 'bot.ressort.recent');
+            //TODO: Add query for author RSS feed
+        }*/
+    }
+);
+
  
 dialog.onBegin(function (session, args, next) {
     sende(session, 'Hallo Welt!','onBegin');

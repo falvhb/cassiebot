@@ -1,5 +1,10 @@
 var request = require('request');
 var fs = require('fs');
+var sprintf = require("sprintf-js").sprintf;
+var moment = require('moment');
+moment.locale('de');
+
+
 var texting = {};
 
 var CONST = {
@@ -104,8 +109,31 @@ texting.static = function(key){
   return texting.get('static.'+key);  
 }
 
+
+/**
+ * Return a static array of replies
+ */
+texting.dynamic = function(key){
+  var text = texting.get('dynamic.'+key);
+  console.log(text);
+  switch (key){
+    case 'age':
+      text.forEach(function(testItem, index){
+        text[index] = sprintf(text[index], moment([2016,3,4]).fromNow());
+      });
+      
+    default:
+      console.log('texting> dynamic key ' + key + ' not found');
+  }
+  return text;  
+}
+
 if (require.main === module) {
   //console.log('Texting', process.env.proxysrv);
+  texting.onReady(function(){
+    console.log(texting.dynamic('age')[0]);  
+  });
+  
 } else {
     module.exports = texting;
 }
