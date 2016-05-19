@@ -94,9 +94,18 @@ texting.onReady = function(cb){
 /**
  * Returns any array of replies
  */
-texting.get = function(key){
+texting.get = function(key, s1, s2, s3){
+  var newData = [];
   if (typeof data[key] !== 'undefined'){
-    return data[key];
+    if (typeof s1 === 'undefined'){
+      return data[key];  
+    } else {
+      data[key].forEach(function(item){
+        newData.push(sprintf(item, s1, s2 || '', s3 || ''));
+      });
+      return newData;
+    }
+    
   } else {
     return [key];
   }

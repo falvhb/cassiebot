@@ -11,15 +11,23 @@ var search = require('./search');
 var formatter = require('./formatter');
 var texting = require('./texting');
 var logging = require('./logging');
+var helper = require('./helper');
+var userdata = require('./userdata');
 
 // Create bot and add dialogs
 var DEBUG = false;
 
 
-function sende(session, text, intent){
+function sende(session, text, intent, force){
     if (typeof text === 'string'){
         text = [text];
     }
+    text = text || 'Ich bin sprachlos.';
+    
+    if (userdata.getFlag(session, 'offended') && force !== true){
+        text = '...';
+    }
+    
     var msg = new builder.Message();
     msg.setLanguage(session.message.sourceLanguage || session.message.language);
     msg.setText(session, text);
@@ -36,11 +44,6 @@ function sende(session, text, intent){
 	"channel": session.message.from ? session.message.from.channelId : 'No message.from',
 	"debug": "sendFunction"
   });
-    
-    // session.send({
-    //     "language": session.message.sourceLanguage || session.message.language,
-    //     "text": text
-    // });
 }
 
 
@@ -102,7 +105,19 @@ texting.onReady(function(intents){
           case 'static':
             console.log('OK> ' + aIntent);
             dialog.on('bot.static.' + aIntent[1], function (session, args) {
-                sende(session, texting.static(aIntent[1]), 'bot.static.' + aIntent[1]);
+                var force = false;
+                switch (aIntent[1]) {
+                    case 'offend':
+                        userdata.setFlag(session, 'offended', true);
+                        force = true; //let message through
+                        break;
+                    case 'excuse':
+                        userdata.setFlag(session, 'offended', false);
+                        break;
+                    default:
+                        break;
+                }
+                sende(session, texting.static(aIntent[1]), 'bot.static.' + aIntent[1], force);
             });          
             break;
            
@@ -111,14 +126,7 @@ texting.onReady(function(intents){
             console.log('OK> ' + aIntent);
             dialog.on('bot.feed.' + aIntent[1], function (session, args) {
                 api.readFeed('wiwo', aIntent[1]).then(function(data){
-                    //remember last articles
-                    if (data.length){
-                        var lastLinks = [];
-                        data.forEach(function(item){
-                            lastLinks.push({title: item.title, link: item.link});
-                        });
-                        session.userData.lastLinks = lastLinks;
-                    }
+                    userdata.rememberLastArticles(session, data);
                     sende(session,
                           formatter.toLinkList(data, texting.get(intent)),
                           'bot.feed.' + aIntent[1]);
@@ -219,9 +227,18 @@ dialog.on('bot.ressort.recent',
                  "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Ressorts Missing]",
                  'bot.ressort.recent-NoRessort');
         } else {
-            sende(session, sprintf(texting.get('ressort.recent').pop(), 
-                ressortFound.charAt(0).toUpperCase() + ressortFound.slice(1)
-                ), 'bot.ressort.recent');
+            console.log('Ressort>' + ressortFound);
+            api.readFeed('wiwo', ressortFound).then(function(data){
+                userdata.rememberLastArticles(session, data);
+                sende(session,
+                        formatter.toLinkList(data, texting.get('ressort.recent', ressortFound.charAt(0).toUpperCase() + ressortFound.slice(1))),
+                        'bot.feed.' + ressortFound);
+            });
+            
+            
+            // sende(session, sprintf(texting.get('ressort.recent').pop(), 
+            //     ressortFound.charAt(0).toUpperCase() + ressortFound.slice(1)
+            //     ), 'bot.ressort.recent');
             //TODO: Add query for author RSS feed
         }
          
@@ -243,12 +260,24 @@ dialog.onBegin(function (session, args, next) {
 
 dialog.onDefault(function(session, args){
     sende(session,
-          "Es tut mir leid. Dies habe ich nicht verstanden: " + session.message.text,
-          'onDefault');   
+        sprintf("Es tut mir leid. Dies habe ich nicht verstanden.  \nÜbersetzung: '%s'.  \nBeste Vermutung: %s (%s%%)",
+           session.message.text,
+           helper.getIntent(args),
+           helper.getConfidence(args)
+        ),
+        'onDefault');   
 });
 
 
 bot.add('/', dialog);
+
+
+// bot.use(function (session, next){
+//    if (typeof session.userData.flags === 'undefined'){
+//        session.send('...');
+//    }
+    
+// });
 
 // Install logging middleware
 bot.use(function (session, next) {
