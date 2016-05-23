@@ -4,6 +4,8 @@ var Botkit = require('botkit');
 var sprintf = require("sprintf-js").sprintf
 var url = require('url');
 
+var googleTranslate = require('google-translate')(process.env.translateKey || '');
+
 var prompts = require('./prompts');
 var api = require('./api');
 var search = require('./search');
@@ -15,7 +17,7 @@ var helper = require('./helper');
 var userdata = require('./userdata');
 
 // Create bot and add dialogs
-var DEBUG = false;
+var DEBUG = process.env.debug === 'true' || false;
 
 
 function sende(session, text, intent, force){
@@ -28,10 +30,16 @@ function sende(session, text, intent, force){
         text = '...';
     }
     
-    var msg = new builder.Message();
-    msg.setLanguage(session.message.sourceLanguage || session.message.language);
-    msg.setText(session, text);
-    session.send(msg);
+    if (typeof session.flagFake === 'undefined'){
+        var msg = new builder.Message();
+        msg.setLanguage(session.message.sourceLanguage || session.message.language);
+        msg.setText(session, text);
+        session.send(msg);
+     } else {
+         //TODO Define reply object
+         //TODO choose text from text array randomly
+        session.send(text);
+     }
     
   logging.conversation({
 	"message_text": session.message.text,
@@ -301,16 +309,17 @@ bot.use(function (session, next) {
 });
 
 var events = ['error',
-'reply',
-'send',
-'quit',
-'Message',
-'DeleteUserData',
-'BotAddedToConversation',
-'BotRemovedFromConversation',
-'UserAddedToConversation',
-'UserRemovedFromConversation',
-'EndOfConversation'];
+    'reply',
+    'send',
+    'quit',
+    'Message',
+    'DeleteUserData',
+    'BotAddedToConversation',
+    'BotRemovedFromConversation',
+    'UserAddedToConversation',
+    'UserRemovedFromConversation',
+    'EndOfConversation'
+];
 
 events.forEach(function(name){
     bot.on(name,function(messageEvent){
@@ -397,23 +406,50 @@ if (process.env.PORT || process.env.port || DEBUG){
 
     
     //External API
-    server.get('/ext', function(req, res, next) {
-        var query = url.parse(req.url,true).query;
-        console.log('params', query)
+    if (process.env.translateKey){
+        server.get('/ext', function(req, res, next) {
+            var query = url.parse(req.url,true).query;
+            console.log('params', query)
             if (query.msg){
-            var msg = "A message for you:" + query.msg;
-            console.log("slackBot", bot);
-            //builder.DialogAction.send(msg);
-            //bot.send(msg);
-            //slackBot.bot.say(msg);
-            //bot.beginDialog(address: IBeginDialogAddress, dialogId: string, dialogArgs?: any): void
-            //bot.beginDialog({ from: alarm.from, to: alarm.to }, '/notify', msg);
-            res.send("A message for you:" + msg);
-        } else {
-            res.send('No msg...');
+                var msg = query.msg;
+
+                googleTranslate.translate(msg, 'de','en', function(err, translation) {
+                    if (err){
+                        res.send(err);
+                    } else {
+                        console.log(translation);
+                        //res.send("Translation: " + translation.translatedText);
+                        
+                        var message = {
+                              text: translation.translatedText,
+                              sourceText: msg,
+                              language: 'en',
+                              sourceLanguage: 'de'  
+                        };
+                        
+                        res.message = message;
+                        res.userData = {};
+                        res.flagFake = true;
+                        sende(res, translation.translatedText, '');
+                        
+                        //todo Args = LUIS Object
+                    }
+                // =>  { translatedText: 'Hallo', originalText: 'Hello', detectedSourceLanguage: 'en' }
+                });
+
+
+                
+            } else {
+                res.send('No msg...');
+            }
+            next();
+        });
+    } else {
+        console.log('ERR> Problem detected.');
+        if (typeof process.env.translateKey === 'undefined'){
+            console.log('ERR> translateKey Env Var missing');
         }
-        next();
-    });
+    }
 
     server.listen(process.env.PORT || process.env.port || 3978, function () {
         console.log('%s listening to %s', server.name, server.url); 
