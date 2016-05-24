@@ -15,6 +15,7 @@ var texting = require('./texting');
 var logging = require('./logging');
 var helper = require('./helper');
 var userdata = require('./userdata');
+var luisApi = require('./luis');
 
 // Create bot and add dialogs
 var DEBUG = process.env.debug === 'true' || false;
@@ -38,7 +39,10 @@ function sende(session, text, intent, force){
      } else {
          //TODO Define reply object
          //TODO choose text from text array randomly
-        session.send(text);
+         var reply = {};
+         reply.text = text[Math.floor(Math.random()*text.length)];
+         console.log('SENDE>', reply);
+         session.send(reply);
      }
     
   logging.conversation({
@@ -67,34 +71,28 @@ if (process.env.PORT || process.env.port || DEBUG){
 
 var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/application?id=3a505278-4c2c-4d3b-bdb5-43c4de6cc83e&subscription-key=' + process.env.luisKey);
 
-// bot.news.recent
-// bot.news.hot clicks
+/**
+ * Extend default dialog to be reusable
+ */
+var xdialog = {
+    _data: {},
+    on: function(name, callback){
+        dialog.on(name, callback);
+        xdialog._data[name] = callback;
+    },
+    trigger: function(name, session, args){
+        if (typeof xdialog._data[name] === 'function'){
+            xdialog._data[name](session, args);
+        } else {
+            console.log('WARNING: Intent ' + name + ' not found in xdialog.');
+        }
+    }
+}
 
-// dialog.on('bot.feed.recent', function (session, args) {
-//         api.readFeed('wiwo', 'recent').then(function(data){
-//             //remember last articles
-//             if (data.length){
-//                 var lastLinks = [];
-//                 data.forEach(function(item){
-//                     lastLinks.push({title: item.title, link: item.link});
-//                 });
-//                 session.userData.lastLinks = lastLinks;
-//             }
-//             sende(session, formatter.toLinkList(data, 'Hier sind die fünf neusten Artikel'));
-//         });
-// });
 
-// dialog.on('bot.feed.hot', function (session, args) {
-//         api.readFeed('wiwo', 'hot').then(function(data){
-//             //console.log('Got', data);
-//             sende(session, formatter.toLinkList(data, 'Hier sind die fünf am meisten lesenen Artikel'));
-//         });
-// });
-
-// dialog.on('bot.static.hi', function (session, args) {
-//         sende(session, texting.static('hello'));
-// });
-
+/**
+ * Register intents
+ */
 texting.onReady(function(intents){
     
     /** Defaults */
@@ -112,7 +110,7 @@ texting.onReady(function(intents){
           /** Static intents */
           case 'static':
             console.log('OK> ' + aIntent);
-            dialog.on('bot.static.' + aIntent[1], function (session, args) {
+            xdialog.on('bot.static.' + aIntent[1], function (session, args) {
                 var force = false;
                 switch (aIntent[1]) {
                     case 'offend':
@@ -132,7 +130,7 @@ texting.onReady(function(intents){
           /** Feeds  */
           case 'feed':
             console.log('OK> ' + aIntent);
-            dialog.on('bot.feed.' + aIntent[1], function (session, args) {
+            xdialog.on('bot.feed.' + aIntent[1], function (session, args) {
                 api.readFeed('wiwo', aIntent[1]).then(function(data){
                     userdata.rememberLastArticles(session, data);
                     sende(session,
@@ -145,13 +143,13 @@ texting.onReady(function(intents){
           //doesn't care about type - just confirms that intent was recognized
           case 'temp':
             console.log('OK> ' + aIntent);
-            dialog.on('bot.temp.' + aIntent[1], function (session, args) {
+            xdialog.on('bot.temp.' + aIntent[1], function (session, args) {
                 sende(session, texting.get(intent), 'bot.' + 'bot.temp.' + aIntent[1]);
             });  
           
           case 'dynamic':
             console.log('OK> ' + aIntent);
-            dialog.on('bot.dynamic.' + aIntent[1], function (session, args) {
+            xdialog.on('bot.dynamic.' + aIntent[1], function (session, args) {
                 sende(session, texting.dynamic(aIntent[1]), 'bot.' + intent);
             });  
             
@@ -164,7 +162,7 @@ texting.onReady(function(intents){
 
 
 
-dialog.on('bot.search', 
+xdialog.on('bot.search', 
     function (session, args) {
         var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
         console.log('Search Term', searchTerm);
@@ -192,7 +190,7 @@ dialog.on('bot.search',
     }
 );
 
-dialog.on('bot.temp.feed.author.recent', 
+xdialog.on('bot.temp.feed.author.recent', 
     function (session, args) {
         var author = builder.EntityRecognizer.findEntity(args.entities, 'Author');
         console.log('Author', author);
@@ -207,7 +205,7 @@ dialog.on('bot.temp.feed.author.recent',
     }
 );
 
-dialog.on('bot.ressort.recent', 
+xdialog.on('bot.ressort.recent', 
     function (session, args) {
         var ressort = builder.EntityRecognizer.findEntity(args.entities, 'Ressorts');
         console.log('Ressort', ressort);
@@ -409,7 +407,12 @@ if (process.env.PORT || process.env.port || DEBUG){
     if (process.env.translateKey){
         server.get('/ext', function(req, res, next) {
             var query = url.parse(req.url,true).query;
-            console.log('params', query)
+            //console.log('params', query)
+            res.header("Content-Type", "application/json");
+            res.charSet('utf-8');
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Methods', 'GET');            
+
             if (query.msg){
                 var msg = query.msg;
 
@@ -430,7 +433,19 @@ if (process.env.PORT || process.env.port || DEBUG){
                         res.message = message;
                         res.userData = {};
                         res.flagFake = true;
-                        sende(res, translation.translatedText, '');
+                        
+                        
+                        //sende(res, translation.translatedText, '');
+                        
+                        luisApi.query(translation.translatedText).then(
+                            function(json){
+                                var args = JSON.parse(json);
+                                if (helper.getConfidence(args) > 9){
+                                    xdialog.trigger(helper.getIntent(args), res, args);    
+                                }
+                                
+                            }
+                        )
                         
                         //todo Args = LUIS Object
                     }
