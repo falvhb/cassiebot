@@ -21,7 +21,7 @@ var FEEDS = {
     finanzen: CONST.RSS + 'finanzen',
     politik: CONST.RSS + 'politk',
     erfolg: CONST.RSS + 'erfolg',
-    techonolgie: CONST.RSS + 'technologie'//,
+    technologie: CONST.RSS + 'technologie'//,
     //green:'http://green.wiwo.de/feed/'
   }
 };
