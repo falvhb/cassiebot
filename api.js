@@ -1,6 +1,7 @@
 var FeedParser = require('feedparser');
 var http = require("http");
 var moment = require('moment');
+var request = require('request');
 moment.locale('de');
 var Q = require('q');
 
@@ -9,6 +10,10 @@ var CONST = {
   RSS: 'http://www.wiwo.de/contentexport/feed/rss/',
   DOMAIN: {
     wiwo: 'www.wiwo.de' 
+  },
+  STOCK: {
+    SEARCH: 'http://finanzen.handelsblatt.com/include_chart.htn?sektion=instrumentId&suchbegriff=',
+    JSON: 'http://boerse.wiwo.de/3048/chartNG.gfn?chartType=0&width=580&height=243&subProperty=20&highLow=1&instrumentId=120517'
   }
 };
 
@@ -131,15 +136,52 @@ api.readFeed = function (source, id) {
 }
 
 
-if (require.main === module) {
-  var feed;
-  for (var x in FEEDS.wiwo){
-    feed = FEEDS.wiwo[x];
-    console.log('FEED ', x, feed)
-    api.readFeed('wiwo', 'recent').then(function(data){
-      console.log('Got', data);
+
+//STOCK READER
+api.getStock = function(searchTerm){
+  var deferred = Q.defer();
+  
+  request.get(CONST.STOCK.SEARCH + encodeURIComponent(searchTerm), function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        //console.log(body) // Show the HTML for the Google homepage.
+        var aBody = body.split('=');
+        if (aBody.length === 2){
+          deferred.resolve(aBody[0]);
+          
+          //TODO Get JSON with details for stock
+          
+          
+        } else {
+          deferred.reject({description:'Stock ID not found'});
+        }
+ 
+      } else {
+        console.log('ERROR', error, response);    
+        deferred.reject(error);
+      }
     });
-  }
+  
+  return deferred.promise;  
+}
+
+if (require.main === module) {
+  // var feed;
+  // for (var x in FEEDS.wiwo){
+  //   feed = FEEDS.wiwo[x];
+  //   console.log('FEED ', x, feed)
+  //   api.readFeed('wiwo', 'recent').then(function(data){
+  //     console.log('Got', data);
+  //   });
+  // }
+  api.getStock('apple').then(function(data){
+    console.log('getStock success: ' + data);
+  });
+  api.getStock('sdfsdfsdf').then(function(data){
+    console.log('getStock success: ' + data);
+  }).catch(function(err){
+    console.error('getStock failed: ', err);
+  });
+  
 } else {
     module.exports = api;
 }
