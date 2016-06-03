@@ -211,10 +211,12 @@ xdialog.on('bot.stock', function (session, args) {
         //console.log('SearchTerm:', searchTerm.entity);
         api.getStock(searchTerm.entity).then(function(data){
             //success:
+            //console.log('DEBUG',data.hrefMobile.split('=')[1]);
             sende(session, texting.get('stock__found',
                 data.descriptionShort,
-                data.lastPrice,
-                data.quoteTime
+                data.lastPrice.replace('&euro;','€'),
+                data.quoteTime,
+                data.hrefMobile.split('=')[1]
                 ), 'bot.stock__nosearchterm');              
         }).catch(function(err){
             //error:

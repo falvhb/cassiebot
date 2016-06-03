@@ -94,14 +94,14 @@ texting.onReady = function(cb){
 /**
  * Returns any array of replies
  */
-texting.get = function(key, s1, s2, s3){
+texting.get = function(key, s1, s2, s3, s4, s5, s6){
   var newData = [];
   if (typeof data[key] !== 'undefined'){
     if (typeof s1 === 'undefined'){
       return data[key];  
     } else {
       data[key].forEach(function(item){
-        newData.push(sprintf(item, s1, s2 || '', s3 || ''));
+        newData.push(sprintf(item, s1, s2 || '', s3 || '', s4 || '', s5 || '', s6 || ''));
       });
       return newData;
     }
