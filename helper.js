@@ -15,6 +15,18 @@ helper.getIntent = function (args) {
 }
 
 
+helper.getQuoted = function(text){
+    var r = false;
+    
+    var aText = text.split('"');
+    if (aText.length === 3){
+        return aText[1];
+    }
+    
+    return r;
+}
+
+
 if (require.main === module) {
   console.log('helper');
   

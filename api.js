@@ -13,7 +13,8 @@ var CONST = {
   },
   STOCK: {
     SEARCH: 'http://finanzen.handelsblatt.com/include_chart.htn?sektion=instrumentId&suchbegriff=',
-    JSON: 'http://boerse.wiwo.de/3048/chartNG.gfn?chartType=0&width=580&height=243&subProperty=20&highLow=1&instrumentId=120517'
+    JSON: 'http://finanzen.handelsblatt.com/kurse_einzelkurs_uebersicht.htn?view=jsonChart&debug=1&i=',
+    IMG: 'http://boerse.wiwo.de/3048/chartNG.gfn?chartType=0&width=580&height=243&subProperty=20&highLow=1&instrumentId=120517'
   }
 };
 
@@ -146,13 +147,19 @@ api.getStock = function(searchTerm){
         //console.log(body) // Show the HTML for the Google homepage.
         var aBody = body.split('=');
         if (aBody.length === 2){
-          deferred.resolve(aBody[0]);
           
           //TODO Get JSON with details for stock
+          request.get(CONST.STOCK.JSON + aBody[0], function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+              deferred.resolve(JSON.parse(body)[aBody[0]]);    
+            } else {
+              deferred.reject({description:'Stock JSON data not found'});
+            }  
+          })
           
           
         } else {
-          deferred.reject({description:'Stock ID not found'});
+          deferred.reject({description:'Stock ID not found: "' + searchTerm + '"'});
         }
  
       } else {
@@ -174,10 +181,10 @@ if (require.main === module) {
   //   });
   // }
   api.getStock('apple').then(function(data){
-    console.log('getStock success: ' + data);
+    console.log('getStock success: ', data);
   });
   api.getStock('sdfsdfsdf').then(function(data){
-    console.log('getStock success: ' + data);
+    console.log('getStock success: ', data);
   }).catch(function(err){
     console.error('getStock failed: ', err);
   });

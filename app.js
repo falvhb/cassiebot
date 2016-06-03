@@ -51,8 +51,8 @@ function sende(session, text, intent, force){
 	"message_language": session.message.language,
 	"message_sourcelanguage": session.message.sourceLanguage,
 	"reply_intent": intent,  
-	"reply_language": msg.language,
-	"reply_text": msg.text,
+	"reply_language": msg ? msg.language : 'de',
+	"reply_text": msg ? msg.text : reply.text,
 	"channel": session.message.from ? session.message.from.channelId : 'No message.from',
 	"debug": "sendFunction"
   });
@@ -189,6 +189,40 @@ xdialog.on('bot.search',
         }
     }
 );
+
+/**
+ * SEARCH FOR STOCK 
+ */
+xdialog.on('bot.stock', function (session, args) {
+    var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
+    
+    if (!searchTerm){
+        var stagedSearchTerm = helper.getQuoted(session.message.text);
+        if (stagedSearchTerm){
+            searchTerm = {
+                entity: stagedSearchTerm
+            };
+        }
+    }
+     
+    if (!searchTerm) {
+        sende(session, texting.get('stock__nosearchterm'), 'bot.stock__nosearchterm');
+    } else {
+        //console.log('SearchTerm:', searchTerm.entity);
+        api.getStock(searchTerm.entity).then(function(data){
+            //success:
+            sende(session, texting.get('stock__found',
+                data.descriptionShort,
+                data.lastPrice,
+                data.quoteTime
+                ), 'bot.stock__nosearchterm');              
+        }).catch(function(err){
+            //error:
+            sende(session, texting.get('stock__error', err.description), 'bot.stock__error');            
+        });        
+    }
+
+});
 
 xdialog.on('bot.temp.feed.author.recent', 
     function (session, args) {
