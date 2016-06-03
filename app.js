@@ -20,6 +20,7 @@ var luisApi = require('./luis');
 // Create bot and add dialogs
 var DEBUG = process.env.debug === 'true' || false;
 
+var NOTEXTBOT = true;
 
 function sende(session, text, intent, force){
     if (typeof text === 'string'){
@@ -58,8 +59,12 @@ function sende(session, text, intent, force){
   });
 }
 
+// function attach(session, data){
+//     session.message.addAttachment
+// }
 
-if (process.env.PORT || process.env.port || DEBUG){
+
+if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
     var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
     bot.configure({
         userWelcomeMessage: "userWelcomeMessage",
@@ -154,7 +159,7 @@ texting.onReady(function(intents){
             });  
             
           default:
-            console.warn('SYS> Not action for intent: ' + intent[0] + ' available');  
+            console.warn('SYS> Not action for intent: ' + aIntent[0] + ' available');  
        }
     });
      
@@ -248,6 +253,7 @@ xdialog.on('bot.ressort.recent',
         
         var keywords = {
             'cooperation': 'unternehmen',
+            'corporate': 'unternehmen',
             'technology': 'technologie',
             'politics': 'politik',
             'policy': 'politik',
@@ -401,7 +407,7 @@ commands.onDefault(function(session, args){
 
 
 // Setup Restify Server
-if (process.env.PORT || process.env.port || DEBUG){
+if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
 
 
 
@@ -507,5 +513,6 @@ if (process.env.PORT || process.env.port || DEBUG){
     });
 
 } else {
+    console.log('START:');
     bot.listenStdin();
 }

@@ -16,8 +16,8 @@ var data = {};
 //load XLS file
 function loadXls(cb){
   var url = 'https://spreadsheets.google.com/feeds/list/' + CONST.SHEET_ID + '/od6/public/basic?alt=json';
-  
-  
+
+
   function doCallback(data, error){
     // "static.hello":["hi","hallo","test"];
     var lib = {}, key, val;
@@ -40,23 +40,23 @@ function loadXls(cb){
       cb(lib);
     }
   }
-  
-  
+
+
   if (process.env.proxysrv) {
     var body = fs.readFileSync('./spreadsheet.json').toString();
     setTimeout(function(){
-      doCallback(body);  
+      doCallback(body);
     }, 500);
-  } else {  
+  } else {
     request.get(url, function (error, response, body) {
       if (!error && response.statusCode == 200) {
-        //console.log(body) // Show the HTML for the Google homepage. 
+        //console.log(body) // Show the HTML for the Google homepage.
         doCallback(body);
       } else {
         console.log('ERROR', error, response);
         doCallback(undefined, error);
       }
-    });  
+    });
   }
 }
 
@@ -98,14 +98,14 @@ texting.get = function(key, s1, s2, s3, s4, s5, s6){
   var newData = [];
   if (typeof data[key] !== 'undefined'){
     if (typeof s1 === 'undefined'){
-      return data[key];  
+      return data[key];
     } else {
       data[key].forEach(function(item){
         newData.push(sprintf(item, s1, s2 || '', s3 || '', s4 || '', s5 || '', s6 || ''));
       });
       return newData;
     }
-    
+
   } else {
     return [key];
   }
@@ -115,7 +115,7 @@ texting.get = function(key, s1, s2, s3, s4, s5, s6){
  * Return a static array of replies
  */
 texting.static = function(key){
-  return texting.get('static.'+key);  
+  return texting.get('static.'+key);
 }
 
 
@@ -130,19 +130,19 @@ texting.dynamic = function(key){
       text.forEach(function(testItem, index){
         text[index] = sprintf(text[index], moment([2016,3,4]).fromNow());
       });
-      
+
     default:
       console.log('texting> dynamic key ' + key + ' not found');
   }
-  return text;  
+  return text;
 }
 
 if (require.main === module) {
   //console.log('Texting', process.env.proxysrv);
   texting.onReady(function(){
-    console.log(texting.dynamic('age')[0]);  
+    console.log(texting.dynamic('age')[0]);
   });
-  
+
 } else {
     module.exports = texting;
 }
