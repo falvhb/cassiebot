@@ -238,10 +238,8 @@ xdialog.on('bot.stock', function (session, args) {
     if (!searchTerm) {
         sende(session, texting.get('stock__nosearchterm'), 'bot.stock__nosearchterm');
     } else {
-        //console.log('SearchTerm:', searchTerm.entity);
         api.getStock(searchTerm.entity).then(function(data){
             //success:
-            //console.log('DEBUG',data.hrefMobile.split('=')[1]);
             var id = data.hrefMobile.split('=')[1];
             attach(session, {
                contentType: 'image/png',
@@ -261,16 +259,15 @@ xdialog.on('bot.stock', function (session, args) {
 
 });
 
-xdialog.on('bot.temp.feed.author.recent', 
+xdialog.on('bot.special.feed.author.recent', 
     function (session, args) {
         var author = builder.EntityRecognizer.findEntity(args.entities, 'Author');
-        console.log('Author', author);
+        //console.log('Author', author);
         if (!author) {
-           sende(session,
-                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Author Missing]",
-                 'bot.temp.feed.author.recent-NoAuthor');
+            sende(session, texting.get('special.feed.author.recent__noauthor', session.message.text),
+                 'bot.special.feed.author.recent__noauthor');
         } else {
-            sende(session, sprintf(texting.get('temp.feed.author.recent').pop(), author.entity), 'bot.temp.feed.author.recent');
+            sende(session, texting.get('special.feed.author.recent', author.entity), 'bot.special.feed.author.recent');
             //TODO: Add query for author RSS feed
         }
     }
