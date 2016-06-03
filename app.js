@@ -151,6 +151,18 @@ texting.onReady(function(intents){
             xdialog.on('bot.feed.' + aIntent[1], function (session, args) {
                 api.readFeed('wiwo', aIntent[1]).then(function(data){
                     userdata.rememberLastArticles(session, data);
+                    
+                    //cards attachment feature test
+                    data.forEach(function(row, index){
+                        attach(session, {
+                            title: row.overline.trim() + ': ' + row.title,
+                            titleLink: row.link,
+                            text: row.summary,
+                            thumbnailUrl: row.imageUrl,
+                            fallbackText: (index+1) + '. ' + row.overline.trim() + ': ' + row.title + ' - [Artikel öffnen](' + row.link + ')' + ' *(' + row.ago + ')*'
+                        });
+                    });
+                    
                     sende(session,
                           formatter.toLinkList(data, texting.get(intent)),
                           'bot.feed.' + aIntent[1]);
@@ -191,7 +203,7 @@ xdialog.on('bot.search',
         } else {
            search.doSearch(searchTerm.entity).then(function(data){
                console.log('search_result', data);
-               if (data.length){
+               if (data.length){                    
                     sende(session, formatter.toSearchResultsList(data, searchTerm.entity),'bot.search');
                } else {
                     sende(session,

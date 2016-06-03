@@ -41,7 +41,7 @@ function parseItem(item) {
     id: item.link.split('/').pop().split('.')[0],
     date: new Date(item.date),
     title: item.title,
-    //summary: item.summary,
+    summary: item.summary,
     //html: item.description,
     link: item.link + '?share=bot',
     categories: item.categories
