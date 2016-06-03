@@ -36,12 +36,24 @@ function sende(session, text, intent, force){
         var msg = new builder.Message();
         msg.setLanguage(session.message.sourceLanguage || session.message.language);
         msg.setText(session, text);
+        if (session.tempAttachments && session.tempAttachments.length){
+            session.tempAttachments.forEach(function(attachment){
+                msg.addAttachment(attachment);
+            });
+            session.tempAttachments = [];
+        }        
+        
         session.send(msg);
      } else {
          //TODO Define reply object
          //TODO choose text from text array randomly
          var reply = {};
          reply.text = text[Math.floor(Math.random()*text.length)];
+         
+         if (session.tempAttachments){
+             reply.attachments = session.tempAttachments;
+         }
+         
          console.log('SENDE>', reply);
          session.send(reply);
      }
@@ -59,9 +71,10 @@ function sende(session, text, intent, force){
   });
 }
 
-// function attach(session, data){
-//     session.message.addAttachment
-// }
+function attach(session, data){
+    if (typeof session.tempAttachments === 'undefined') {session.tempAttachments = [];}
+    session.tempAttachments.push(data);
+}
 
 
 if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
@@ -217,11 +230,16 @@ xdialog.on('bot.stock', function (session, args) {
         api.getStock(searchTerm.entity).then(function(data){
             //success:
             //console.log('DEBUG',data.hrefMobile.split('=')[1]);
+            var id = data.hrefMobile.split('=')[1];
+            attach(session, {
+               contentType: 'image/png',
+               contentUrl: sprintf('http://boerse.wiwo.de/3048/chartNG.gfn?chartType=0&instrumentId=%s&width=580&height=243&subProperty=20&highLow=1', id)   
+            });
             sende(session, texting.get('stock__found',
                 data.descriptionShort,
                 data.lastPrice.replace('&euro;','€'),
                 data.quoteTime,
-                data.hrefMobile.split('=')[1]
+                id
                 ), 'bot.stock__nosearchterm');              
         }).catch(function(err){
             //error:
