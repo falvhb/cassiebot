@@ -197,23 +197,22 @@ xdialog.on('bot.search',
         var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
         console.log('Search Term', searchTerm);
         if (!searchTerm) {
-           sende(session,
-                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Search Term Missing]",
-                 'bot.search-NoSearchTerm');
+            sende(session,
+                texting.get('search__nosearchterm', session.message.text),
+                'bot.search__nosearchterm');
         } else {
            search.doSearch(searchTerm.entity).then(function(data){
                console.log('search_result', data);
                if (data.length){                    
                     sende(session, formatter.toSearchResultsList(data, searchTerm.entity),'bot.search');
                } else {
-                    sende(session,
-                    sprintf("Suche nach '%s' hat leider nichts erbracht... Sorry.", searchTerm.entity),
-                    'bot.search');
+                    sende(session, texting.get('search__noresult', searchTerm.entity),
+                    'bot.search__noresult');
                }
            }).catch(function(err){
                sende(session,
-                     sprintf("Fehler bei der Suche nach '%s'. ärgerlich...", searchTerm.entity),
-                     'bot.search');
+                    texting.get('search__error', searchTerm.entity),
+                    'bot.search__error');
            })
            
         }
@@ -283,9 +282,11 @@ xdialog.on('bot.ressort.recent',
             'corporate': 'unternehmen',
             'technology': 'technologie',
             'politics': 'politik',
+            'politic': 'politik',
             'policy': 'politik',
             'success': 'erfolg',
-            'finance': 'finanzen'
+            'finance': 'finanzen',
+            'financial': 'finanzen'
         };
         var found = false;
         var ressortFound = '';
@@ -298,11 +299,11 @@ xdialog.on('bot.ressort.recent',
         }
         
         if (!found) {
-           sende(session,
-                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Ressorts Missing]",
-                 'bot.ressort.recent-NoRessort');
+            sende(session,
+                texting.get('ressort.recent__noressort', session.message.text),
+                'bot.ressort.recent__noressort');
         } else {
-            console.log('Ressort>' + ressortFound);
+            //console.log('Ressort>' + ressortFound);
             api.readFeed('wiwo', ressortFound).then(function(data){
                 userdata.rememberLastArticles(session, data);
                 sende(session,
@@ -310,21 +311,9 @@ xdialog.on('bot.ressort.recent',
                         'bot.feed.' + ressortFound);
             });
             
-            
-            // sende(session, sprintf(texting.get('ressort.recent').pop(), 
-            //     ressortFound.charAt(0).toUpperCase() + ressortFound.slice(1)
-            //     ), 'bot.ressort.recent');
             //TODO: Add query for author RSS feed
         }
-         
-        /*if (!ressort) {
-           sende(session,
-                 "Es tut mir leid. Dies habe ich nicht verstanden: '" + session.message.text + "' [Ressorts Missing]",
-                 'bot.ressort.recent-NoRessort');
-        } else {
-            sende(session, sprintf(texting.get('ressort.recent').pop(), ressort.entity), 'bot.ressort.recent');
-            //TODO: Add query for author RSS feed
-        }*/
+
     }
 );
 
