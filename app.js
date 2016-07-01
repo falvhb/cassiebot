@@ -54,7 +54,7 @@ function sende(session, text, intent, force){
              reply.attachments = session.tempAttachments;
          }
          
-         console.log('SENDE>', reply);
+         //console.log('SENDE>', reply);
          session.send(reply);
      }
     
@@ -69,6 +69,25 @@ function sende(session, text, intent, force){
 	"channel": session.message.from ? session.message.from.channelId : 'No message.from',
 	"debug": "sendFunction"
   });
+
+  //only for ext interface
+  if (session.flagFake){
+    //check if answer was provided by bot
+    var botAnswer = true;
+    var notAnswered = ['static.forwarded','static.confused','search__nosearchterm','stock__nosearchterm'];  
+    if (notAnswered.indexOf(intent) > -1){
+        botAnswer = false;
+    }
+    logging.vhb({
+        website:'wiwo',
+        question:session.message.sourceText,
+        botAnswer:reply.text,
+        flagAnsweredByBot:(botAnswer?'1':'0'),
+        articleID:'0',
+        botQuestionCategory:'question.general',
+        botSession:'0'
+    });
+  }
 }
 
 function attach(session, data){
@@ -101,25 +120,32 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
     var bot = new builder.TextBot();
 }
 
-var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/application?id=3a505278-4c2c-4d3b-bdb5-43c4de6cc83e&subscription-key=' + process.env.luisKey);
 
 /**
  * Extend default dialog to be reusable
  */
-var xdialog = {
-    _data: {},
-    on: function(name, callback){
-        dialog.on(name, callback);
+var XDialog = function(pDialog){
+    this._data = {};
+    this.on = function(name, callback){
+        pDialog.on(name, callback);
         xdialog._data[name] = callback;
-    },
-    trigger: function(name, session, args){
+    };
+    this.trigger = function(name, session, args){
         if (typeof xdialog._data[name] === 'function'){
             xdialog._data[name](session, args);
         } else {
             console.log('WARNING: Intent ' + name + ' not found in xdialog.');
         }
-    }
+    };
+    return this;
 }
+
+//advanced general dialog
+var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/application?id=3a505278-4c2c-4d3b-bdb5-43c4de6cc83e&subscription-key=' + process.env.luisKey);
+var xdialog = new XDialog(dialog);
+
+//central dispatcher dialog
+var dispDialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/application?id=c7155efb-dd09-46bc-95b8-73f8671d5528&subscription-key=' + process.env.luisKey);
 
 
 /**
