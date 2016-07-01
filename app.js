@@ -85,7 +85,7 @@ function sende(session, text, intent, force){
     }
     logging.vhb({
         website:'wiwo',
-        question:session.message.sourceText,
+        question:session.message.sourceText || session.message.text,
         botAnswer:reply.text,
         flagAnsweredByBot:(botAnswer?'1':'0'),
         articleID:'0',
@@ -563,7 +563,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                         if (err){
                                             res.send(err);
                                         } else {
-                                            res.message.sourceText = message.text;
+                                            res.message.sourceText = res.message.text;
                                             res.message.text = translation.translatedText
                                             res.message.sourceLanguage = 'de',
                                             res.message.language = 'en';
