@@ -76,6 +76,20 @@ function attach(session, data){
     session.tempAttachments.push(data);
 }
 
+function sendeDefault(session, args){
+    sende(session,
+        sprintf("Es tut mir leid. Dies habe ich nicht verstanden.  \nÜbersetzung: '%s'.  \nBeste Vermutung: %s (%s%%)",
+           session.message.text,
+           helper.getIntent(args),
+           helper.getConfidence(args)
+        ),
+        'onDefault');   
+}
+
+
+/**
+ * START MAIN PROCESS
+ */
 
 if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
     var bot = new builder.BotConnectorBot({ appId: process.env.appId, appSecret: process.env.appSecret });
@@ -317,19 +331,24 @@ xdialog.on('bot.ressort.recent',
     }
 );
 
+xdialog.on('None', function (session, args) {
+    sende(session, texting.static('confused'), 'bot.static.confused', false);
+});
+
  
 dialog.onBegin(function (session, args, next) {
     sende(session, 'Hallo Welt!','onBegin');
 });  
 
 dialog.onDefault(function(session, args){
-    sende(session,
-        sprintf("Es tut mir leid. Dies habe ich nicht verstanden.  \nÜbersetzung: '%s'.  \nBeste Vermutung: %s (%s%%)",
-           session.message.text,
-           helper.getIntent(args),
-           helper.getConfidence(args)
-        ),
-        'onDefault');   
+    sendeDefault(session, args);
+    // sende(session,
+    //     sprintf("Es tut mir leid. Dies habe ich nicht verstanden.  \nÜbersetzung: '%s'.  \nBeste Vermutung: %s (%s%%)",
+    //        session.message.text,
+    //        helper.getIntent(args),
+    //        helper.getConfidence(args)
+    //     ),
+    //     'onDefault');   
 });
 
 
@@ -500,10 +519,14 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                 var args = JSON.parse(json);
                                 if (helper.getConfidence(args) > 9){
                                     xdialog.trigger(helper.getIntent(args), res, args);    
+                                } else {
+                                    sendeDefault(res, args);
                                 }
                                 
                             }
-                        )
+                        ).catch(function(err){
+                            res.send(err);
+                        })
                         
                         //todo Args = LUIS Object
                     }
