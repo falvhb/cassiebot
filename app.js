@@ -65,9 +65,9 @@ function sende(session, text, intent, force){
     
   logging.conversation({
 	"message_text": session.message.text,
-	"message_sourcetext": session.message.sourceText,
+	"message_sourcetext": session.message.sourceText || session.message.text,
 	"message_language": session.message.language,
-	"message_sourcelanguage": session.message.sourceLanguage,
+	"message_sourcelanguage": session.message.sourceLanguage || session.message.language,
 	"reply_intent": intent,  
 	"reply_language": msg ? msg.language : 'de',
 	"reply_text": msg ? msg.text : reply.text,
@@ -537,34 +537,37 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
             if (query.msg){
                 var msg = query.msg;
 
-                googleTranslate.translate(msg, 'de','en', function(err, translation) {
-                    if (err){
-                        res.send(err);
-                    } else {
-                        console.log(translation);
-                        //res.send("Translation: " + translation.translatedText);
-                        
-                        var message = {
-                              text: translation.translatedText,
-                              sourceText: msg,
-                              language: 'en',
-                              sourceLanguage: 'de'  
-                        };
-                        
-                        res.message = message;
-                        res.userData = {};
-                        res.flagFake = true;
-                        res._meta = {};
-                        
-                        
-                        luisApi.query(translation.translatedText, LUISAPPS.DISPATCHER).then(
-                            function(args){
-                                if (args.winner.confidence > 9){
-                                    res._meta.botQuestionCategory = args.winner.intent;
-                                    switch (args.winner.intent) {
-                                        case 'question.general':
-                                            //xdialog.trigger('bot.static.question_general', res, args);
-                                            //Query General Bot
+                var message = {
+                        text: msg, // translation.translatedText,
+                        //sourceText: msg,
+                        language: 'de' //'en',
+                        //sourceLanguage: 'de'  
+                };
+                
+                res.message = message;
+                res.userData = {};
+                res.flagFake = true;
+                res._meta = {};
+                
+                
+                luisApi.query(msg, LUISAPPS.DISPATCHER).then(
+                    function(args){
+                        if (args.winner.confidence > 9){
+                            res._meta.botQuestionCategory = args.winner.intent;
+                            switch (args.winner.intent) {
+                                case 'question.general':
+                                    //xdialog.trigger('bot.static.question_general', res, args);
+                                    //Query General Bot
+
+                                    googleTranslate.translate(msg, 'de','en', function(err, translation) {
+                                        if (err){
+                                            res.send(err);
+                                        } else {
+                                            res.message.sourceText = message.text;
+                                            res.message.text = translation.translatedText
+                                            res.message.sourceLanguage = 'de',
+                                            res.message.language = 'en';
+
                                             luisApi.query(translation.translatedText, LUISAPPS.GENERAL).then(
                                                 function(args){
                                                     if (args.winner.confidence > 9){
@@ -576,50 +579,36 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                             ).catch(function(err){
                                                 res.send(err);
                                             });
+                                        }
+                                    });
 
-                                            break;
-                                        case 'question.specific':
-                                            xdialog.trigger('bot.static.forwarded', res, args);
-                                            break;                                            
-                                        case 'feedback.negative':
-                                            xdialog.trigger('bot.static.feedback_negative', res, args);
-                                            break; 
-                                        case 'feedback.positive':
-                                            xdialog.trigger('bot.static.feedback_positive', res, args);
-                                            break; 
-                                        case 'spam':
-                                            xdialog.trigger('bot.static.feedback_positive', res, args);
-                                            break;                                             
-                                        default:
-                                            sendeDefault(res, args);
-                                            break;
-                                    }
-                                } else {
+                                    
+
+                                    break;
+                                case 'question.specific':
+                                    xdialog.trigger('bot.static.forwarded', res, args);
+                                    break;                                            
+                                case 'feedback.negative':
+                                    xdialog.trigger('bot.static.feedback_negative', res, args);
+                                    break; 
+                                case 'feedback.positive':
+                                    xdialog.trigger('bot.static.feedback_positive', res, args);
+                                    break; 
+                                case 'spam':
+                                    xdialog.trigger('bot.static.feedback_positive', res, args);
+                                    break;                                             
+                                default:
                                     sendeDefault(res, args);
-                                }
+                                    break;
                             }
-                        ).catch(function(err){
-                            res.send(err);
-                        })
-
-
-                        //Query General Bot
-                        // luisApi.query(translation.translatedText, LUISAPPS.GENERAL).then(
-                        //     function(args){
-                        //         if (args.winner.confidence > 9){
-                        //             xdialog.trigger(args.winner.intent, res, args);    
-                        //         } else {
-                        //             sendeDefault(res, args);
-                        //         }
-                        //     }
-                        // ).catch(function(err){
-                        //     res.send(err);
-                        // });
-                        
-                        //todo Args = LUIS Object
+                        } else {
+                            sendeDefault(res, args);
+                        }
                     }
-                // =>  { translatedText: 'Hallo', originalText: 'Hello', detectedSourceLanguage: 'en' }
-                });
+                ).catch(function(err){
+                    res.send(err);
+                })
+
 
 
                 
