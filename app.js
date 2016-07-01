@@ -209,6 +209,16 @@ texting.onReady(function(intents){
 xdialog.on('bot.search', 
     function (session, args) {
         var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
+    
+        if (!searchTerm){
+            var stagedSearchTerm = helper.getQuoted(session.message.sourceText || session.message.text);
+            if (stagedSearchTerm){
+                searchTerm = {
+                    entity: stagedSearchTerm
+                };
+            }
+        }   
+   
         console.log('Search Term', searchTerm);
         if (!searchTerm) {
             sende(session,
@@ -240,7 +250,7 @@ xdialog.on('bot.stock', function (session, args) {
     var searchTerm = builder.EntityRecognizer.findEntity(args.entities, 'Search Term');
     
     if (!searchTerm){
-        var stagedSearchTerm = helper.getQuoted(session.message.text);
+        var stagedSearchTerm = helper.getQuoted(session.message.sourceText || session.message.text);
         if (stagedSearchTerm){
             searchTerm = {
                 entity: stagedSearchTerm
