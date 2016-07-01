@@ -20,6 +20,11 @@ var luisApi = require('./luis');
 // Create bot and add dialogs
 var DEBUG = process.env.debug === 'true' || false;
 
+var LUISAPPS = {
+    DISPATCHER: 'c7155efb-dd09-46bc-95b8-73f8671d5528',
+    GENERAL: '3a505278-4c2c-4d3b-bdb5-43c4de6cc83e'
+}
+
 var NOTEXTBOT = true;
 
 function sende(session, text, intent, force){
@@ -74,7 +79,7 @@ function sende(session, text, intent, force){
   if (session.flagFake){
     //check if answer was provided by bot
     var botAnswer = true;
-    var notAnswered = ['static.forwarded','static.confused','search__nosearchterm','stock__nosearchterm'];  
+    var notAnswered = ['bot.static.forwarded','bot.static.confused','bot.static.search__nosearchterm','bot.static.stock__nosearchterm'];  
     if (notAnswered.indexOf(intent) > -1){
         botAnswer = false;
     }
@@ -84,7 +89,7 @@ function sende(session, text, intent, force){
         botAnswer:reply.text,
         flagAnsweredByBot:(botAnswer?'1':'0'),
         articleID:'0',
-        botQuestionCategory:'question.general',
+        botQuestionCategory:session._meta.botQuestionCategory,
         botSession:'0'
     });
   }
@@ -145,7 +150,10 @@ var dialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/applic
 var xdialog = new XDialog(dialog);
 
 //central dispatcher dialog
-var dispDialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/application?id=c7155efb-dd09-46bc-95b8-73f8671d5528&subscription-key=' + process.env.luisKey);
+// var dispDialog = new builder.LuisDialog('https://api.projectoxford.ai/luis/v1/application?id=c7155efb-dd09-46bc-95b8-73f8671d5528&subscription-key=' + process.env.luisKey);
+// var xDispDialog = new XDialog(dispDialog);
+
+
 
 
 /**
@@ -546,23 +554,67 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                         res.message = message;
                         res.userData = {};
                         res.flagFake = true;
+                        res._meta = {};
                         
                         
-                        //sende(res, translation.translatedText, '');
-                        
-                        luisApi.query(translation.translatedText).then(
-                            function(json){
-                                var args = JSON.parse(json);
-                                if (helper.getConfidence(args) > 9){
-                                    xdialog.trigger(helper.getIntent(args), res, args);    
+                        luisApi.query(translation.translatedText, LUISAPPS.DISPATCHER).then(
+                            function(args){
+                                if (args.winner.confidence > 9){
+                                    res._meta.botQuestionCategory = args.winner.intent;
+                                    switch (args.winner.intent) {
+                                        case 'question.general':
+                                            //xdialog.trigger('bot.static.question_general', res, args);
+                                            //Query General Bot
+                                            luisApi.query(translation.translatedText, LUISAPPS.GENERAL).then(
+                                                function(args){
+                                                    if (args.winner.confidence > 9){
+                                                        xdialog.trigger(args.winner.intent, res, args);    
+                                                    } else {
+                                                        sendeDefault(res, args);
+                                                    }
+                                                }
+                                            ).catch(function(err){
+                                                res.send(err);
+                                            });
+
+                                            break;
+                                        case 'question.specific':
+                                            xdialog.trigger('bot.static.forwarded', res, args);
+                                            break;                                            
+                                        case 'feedback.negative':
+                                            xdialog.trigger('bot.static.feedback_negative', res, args);
+                                            break; 
+                                        case 'feedback.positive':
+                                            xdialog.trigger('bot.static.feedback_positive', res, args);
+                                            break; 
+                                        case 'spam':
+                                            xdialog.trigger('bot.static.feedback_positive', res, args);
+                                            break;                                             
+                                        default:
+                                            sendeDefault(res, args);
+                                            break;
+                                    }
                                 } else {
                                     sendeDefault(res, args);
                                 }
-                                
                             }
                         ).catch(function(err){
                             res.send(err);
                         })
+
+
+                        //Query General Bot
+                        // luisApi.query(translation.translatedText, LUISAPPS.GENERAL).then(
+                        //     function(args){
+                        //         if (args.winner.confidence > 9){
+                        //             xdialog.trigger(args.winner.intent, res, args);    
+                        //         } else {
+                        //             sendeDefault(res, args);
+                        //         }
+                        //     }
+                        // ).catch(function(err){
+                        //     res.send(err);
+                        // });
                         
                         //todo Args = LUIS Object
                     }
