@@ -7,30 +7,36 @@ var api = {};
 var EXPERTBOTS = {
     faq: {
         id: 'e93c1e274a424b84907368d8784ed111'
+    },
+    brexit: {
+        id: '8ce2e640a72d4ac4891f5b2fabbf9ef8'
     }
 };
 
 
-for (var bot in EXPERTBOTS){
+for (var bot in EXPERTBOTS) {
     EXPERTBOTS[bot].api = apiai(EXPERTBOTS[bot].id);
 };
 
+api.hasExpert = function (appId) {
+    return typeof EXPERTBOTS[appId] !== 'undefined';
+}
 
-api.query = function(searchTerm, appId){
+api.query = function (searchTerm, appId) {
     var deferred = Q.defer();
     var request = EXPERTBOTS[appId].api.textRequest(searchTerm);
-    request.on('response', function(response) {
+    request.on('response', function (response) {
         var json = {
             reply: response.result.fulfillment.speech,
             score: Math.round(response.result.score * 100)
         };
         deferred.resolve(json);
     });
-    
-    request.on('error', function(error) {
-        deferred.reject({status: error});
+
+    request.on('error', function (error) {
+        deferred.reject({ status: error });
     });
-    
+
     request.end();
 
     return deferred.promise;
@@ -39,13 +45,24 @@ api.query = function(searchTerm, appId){
 
 
 
+
+
 if (require.main === module) {
 
-  api.query('muss ich eingeloggt sein zum kommentieren?', 'faq').then(function(json){
-     console.log('apiai.js>reply>', json); 
-  }).fail(function(err){
-      console.log('apiai.js>Error> Something went wrong', err);
-  });
+    api.query('muss ich eingeloggt sein zum kommentieren?', 'faq').then(function (json) {
+        console.log('apiai.js>reply>', json);
+    }).fail(function (err) {
+        console.log('apiai.js>Error> Something went wrong', err);
+    });
+
+
+    api.query('was ist der brexit?', 'brexit').then(function (json) {
+        console.log('apiai.js>reply>', json);
+    }).fail(function (err) {
+        console.log('apiai.js>Error> Something went wrong', err);
+    });
+
+
 } else {
     module.exports = api;
 }
