@@ -16,6 +16,8 @@ var logging = require('./logging');
 var helper = require('./helper');
 var userdata = require('./userdata');
 var luisApi = require('./luis');
+var apiAi = require('./apiai');
+var natural = require('./natural');
 
 // Create bot and add dialogs
 var DEBUG = process.env.debug === 'true' || false;
@@ -586,7 +588,23 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
 
                                     break;
                                 case 'question.specific':
-                                    xdialog.trigger('bot.static.forwarded', res, args);
+                                    //ask natural package to determine expert
+                                    var expertTopic = natural.getExpert(msg, 0.1);
+
+                                    if (expertTopic && apiAi.hasExpert(expertTopic)){
+
+                                        apiAi.query(msg, expertTopic).then(function (json) {
+                                            sende(res, json.reply + '. (Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.debug');
+                                        }).fail(function (err) {
+                                            res.send(err);
+                                        });
+  
+                                        //sende(res, 'Experte: ' + expertTopic, 'bot.debug');
+
+                                    } else {
+                                        xdialog.trigger('bot.static.forwarded', res, args);
+                                    }
+
                                     break;                                            
                                 case 'feedback.negative':
                                     xdialog.trigger('bot.static.feedback_negative', res, args);
@@ -595,7 +613,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                     xdialog.trigger('bot.static.feedback_positive', res, args);
                                     break; 
                                 case 'spam':
-                                    xdialog.trigger('bot.static.feedback_positive', res, args);
+                                    xdialog.trigger('bot.static.spam', res, args);
                                     break;                                             
                                 default:
                                     sendeDefault(res, args);

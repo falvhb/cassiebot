@@ -49,7 +49,7 @@ var test = function(){
   ];
 
   strings.forEach(function(str){
-      console.log(str.q, str.a, api.getExpert(str.q, 0.1) || ' ---- ');
+      console.log(str.q, str.a, api.query(str.q));
   })
 
 }

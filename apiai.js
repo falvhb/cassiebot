@@ -8,7 +8,7 @@ var EXPERTBOTS = {
     faq: {
         id: 'e93c1e274a424b84907368d8784ed111'
     },
-    brexit: {
+    bitcoin: {
         id: '8ce2e640a72d4ac4891f5b2fabbf9ef8'
     }
 };

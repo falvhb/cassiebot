@@ -28,3 +28,6 @@ brexit: Was könnten Folgen für die Sicherheit sein?
 brexit: Was sind die Argumente der Brexit-Befürworter, was die der Gegner?
 brexit: Wer war für den Austritt, wer dagegen?
 brexit: Woher kommt eigentlich der Begriff Brexit?
+bitcoin: bitcoin
+bitcoin: digitale währung
+bitcoin: mining
