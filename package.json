@@ -13,6 +13,7 @@
   "author": "Federico Elles <federicoplus@gmail.com>",
   "license": "ISC",
   "dependencies": {
+    "apiai": "^2.0.5",
     "botbuilder": "^1.0.1",
     "botkit": "0.0.15",
     "feedparser": "^1.1.4",
