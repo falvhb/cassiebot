@@ -85,15 +85,18 @@ function sende(session, text, intent, force){
     if (notAnswered.indexOf(intent) > -1){
         botAnswer = false;
     }
-    logging.vhb({
-        website:'wiwo',
-        question:session.message.sourceText || session.message.text,
-        botAnswer:reply.text,
-        flagAnsweredByBot:(botAnswer?'1':'0'),
-        articleID:'0',
-        botQuestionCategory:session._meta.botQuestionCategory,
-        botSession:'0'
-    });
+    if (session._meta.sent !== true){
+        logging.vhb({
+            website:'wiwo',
+            question:session.message.sourceText || session.message.text,
+            botAnswer:reply.text,
+            flagAnsweredByBot:(botAnswer?'1':'0'),
+            articleID: session._meta.articleId || '0',
+            botQuestionCategory:session._meta.botQuestionCategory,
+            botSession: session._meta.session || '0'
+        });
+        session._meta.sent = true;
+    }
   }
 }
 
@@ -549,8 +552,10 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                 res.message = message;
                 res.userData = {};
                 res.flagFake = true;
-                res._meta = {};
-                
+                res._meta = {
+                    session: query.session,
+                    articleId: query.articleId
+                };
                 
                 luisApi.query(msg, LUISAPPS.DISPATCHER).then(
                     function(args){
