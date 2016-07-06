@@ -1,15 +1,37 @@
 var natural = require('natural');
 var fs = require('fs');
-var classifier = new natural.BayesClassifier();
+//var classifier = new natural.BayesClassifier();
+
+var classifier = new natural.LogisticRegressionClassifier();
+
+var tokenizer = new natural.WordTokenizer();
+var stemmer = require('./libs/german_word_stemmer');
+
+
+console.log('stemmer', stemmer);
 
 var api = {};
 
 var classifierText = fs.readFileSync('expertbots.txt', "utf8");
 
+function strToDoc(str){
+    var arr = (''+str).toLowerCase();
+	arr = arr.replace(/ä/g, 'a');
+	arr = arr.replace(/ö/g, 'o');
+	arr = arr.replace(/ü/g, 'u');
+    arr = tokenizer.tokenize(arr)
+    arr = stemmer.stemm(arr);
+    return arr;
+}
+
+
 classifierText.split('\n').forEach(function(line){
     var parts = line.split(':');
+    var document;
     if(parts.length === 2){
-        classifier.addDocument(parts[1], parts[0]);
+        document = strToDoc(parts[1]);
+        console.log('LEARNING', document, parts[0]);
+        classifier.addDocument(document, parts[0]);
     }
 });
 
@@ -44,12 +66,20 @@ var test = function(){
     {q:'Wo ist mein Depot', 'a': 'faq'},
     {q:'Kontakt', 'a': 'faq'},
     {q:'Kundensupport', 'a': 'faq'},
-    {q:'Wer ist BoJo', 'a': 'brexit'},
-    {q:'Total sinnlose anfrage', 'a': 'none'}
+    {q:'worauf muss ich achten', 'a': 'bewerbung'},
+    {q:'wie muss ein bewerbungsfoto aussehen', 'a': 'bewerbung'},
+    {q:'muss ich zuerst grüßen', 'a': 'bewerbung'},
+    {q:'ist ein minirock ok', 'a': 'bewerbung'},
+    {q:'Total sinnlose anfrage', 'a': 'none'},
+    {q:'Welche Fragen kann ich stellen?', 'a': 'bewerbung'},
+    {q:'Was darf ich fragen?', 'a': 'bewerbung'},
+    {q:'Sollte ich Gegenfrage parat haben?', 'a': 'bewerbung'},
+    {q:'Wer begrüßt wen zuerst?', 'a': 'bewerbung'},
+    {q:'Handschlag', 'a': 'bewerbung'}
   ];
 
   strings.forEach(function(str){
-      console.log(str.q, str.a, api.query(str.q));
+      console.log(str.q, str.a, api.query(strToDoc(str.q)));
   })
 
 }

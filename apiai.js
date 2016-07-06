@@ -10,6 +10,9 @@ var EXPERTBOTS = {
     },
     bitcoin: {
         id: '8ce2e640a72d4ac4891f5b2fabbf9ef8'
+    },
+    bewerbung: {
+        id: 'c4239b8c6cc04d9789bbccf1508405b1'
     }
 };
 
@@ -17,6 +20,29 @@ var EXPERTBOTS = {
 for (var bot in EXPERTBOTS) {
     EXPERTBOTS[bot].api = apiai(EXPERTBOTS[bot].id);
 };
+
+function speech2MD(speech){
+    var regexLinks = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
+    
+    var md = speech;
+    md = md.replace(/(?:\r\n|\r|\n)/g, '\n\n');
+
+    md = md.replace(regexLinks, function(match){
+        var parts = match.split('/');
+        var text = 'Link';
+        if (parts.length > 4){
+            parts.pop();
+            parts.shift();
+            parts.shift();
+            text = parts.join('/');
+        }
+        return '\n['+text+']('+match+')  ';
+    });
+
+    return md;
+}
+
+
 
 api.hasExpert = function (appId) {
     return typeof EXPERTBOTS[appId] !== 'undefined';
@@ -27,7 +53,7 @@ api.query = function (searchTerm, appId) {
     var request = EXPERTBOTS[appId].api.textRequest(searchTerm);
     request.on('response', function (response) {
         var json = {
-            reply: response.result.fulfillment.speech,
+            reply: speech2MD(response.result.fulfillment.speech),
             score: Math.round(response.result.score * 100)
         };
         deferred.resolve(json);
@@ -49,18 +75,18 @@ api.query = function (searchTerm, appId) {
 
 if (require.main === module) {
 
-    api.query('muss ich eingeloggt sein zum kommentieren?', 'faq').then(function (json) {
+    api.query('kann ich einen minirock anziehen', 'bewerbung').then(function (json) {
         console.log('apiai.js>reply>', json);
     }).fail(function (err) {
         console.log('apiai.js>Error> Something went wrong', err);
     });
 
 
-    api.query('was ist der brexit?', 'brexit').then(function (json) {
-        console.log('apiai.js>reply>', json);
-    }).fail(function (err) {
-        console.log('apiai.js>Error> Something went wrong', err);
-    });
+    // api.query('was ist der brexit?', 'brexit').then(function (json) {
+    //     console.log('apiai.js>reply>', json);
+    // }).fail(function (err) {
+    //     console.log('apiai.js>Error> Something went wrong', err);
+    // });
 
 
 } else {

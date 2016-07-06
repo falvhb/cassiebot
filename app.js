@@ -56,6 +56,8 @@ function sende(session, text, intent, force){
          //TODO choose text from text array randomly
          var reply = {};
          reply.text = text[Math.floor(Math.random()*text.length)];
+         reply.intent = intent;
+         reply.expert = session._meta.expert;
          
          if (session.tempAttachments){
              reply.attachments = session.tempAttachments;
@@ -554,7 +556,8 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                 res.flagFake = true;
                 res._meta = {
                     session: query.session,
-                    articleId: query.articleId
+                    articleId: query.articleId,
+                    expert: query.expert
                 };
                 
                 luisApi.query(msg, LUISAPPS.DISPATCHER).then(
@@ -593,21 +596,32 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
 
                                     break;
                                 case 'question.specific':
-                                    //ask natural package to determine expert
-                                    var expertTopic = natural.getExpert(msg, 0.1);
+                                    
 
-                                    if (expertTopic && apiAi.hasExpert(expertTopic)){
+                                    if (res._meta.expert && apiAi.hasExpert(res._meta.expert)){
+                                        //an expert was forced
 
-                                        apiAi.query(msg, expertTopic).then(function (json) {
-                                            sende(res, json.reply + '. (Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.debug');
+                                        apiAi.query(msg, res._meta.expert).then(function (json) {
+                                            sende(res, json.reply + '. (Forced via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
                                         }).fail(function (err) {
                                             res.send(err);
                                         });
-  
-                                        //sende(res, 'Experte: ' + expertTopic, 'bot.debug');
+                                        
+                                    } else { 
+                                        //ask natural package to determine expert
+                                        var expertTopic = natural.getExpert(msg, 0.1);
 
-                                    } else {
-                                        xdialog.trigger('bot.static.forwarded', res, args);
+                                        if (expertTopic && apiAi.hasExpert(expertTopic)){
+                                            res._meta.expert = expertTopic;
+                                            apiAi.query(msg, expertTopic).then(function (json) {
+                                                sende(res, json.reply + '. (Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.apiai.expert');
+                                            }).fail(function (err) {
+                                                res.send(err);
+                                            });                                        
+    
+                                        } else {
+                                            xdialog.trigger('bot.static.forwarded', res, args);
+                                        }
                                     }
 
                                     break;                                            
