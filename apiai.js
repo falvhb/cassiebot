@@ -36,7 +36,7 @@ function speech2MD(speech){
             parts.shift();
             text = parts.join('/');
         }
-        return '\n['+text+']('+match+')  ';
+        return '\n\n['+text+']('+match+')  ';
     });
 
     return md;
