@@ -602,6 +602,10 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                         //an expert was forced
 
                                         apiAi.query(msg, res._meta.expert).then(function (json) {
+                                            if (json.links){
+                                                attach(res, {type: 'relatedArticles', data: json.links});
+                                            }
+
                                             sende(res, json.reply + '. (Forced via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
                                         }).fail(function (err) {
                                             res.send(err);
@@ -614,6 +618,9 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                         if (expertTopic && apiAi.hasExpert(expertTopic)){
                                             res._meta.expert = expertTopic;
                                             apiAi.query(msg, expertTopic).then(function (json) {
+                                                if (json.links){
+                                                    attach(res, {type: 'relatedArticles', data: json.links});
+                                                }
                                                 sende(res, json.reply + '. (Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.apiai.expert');
                                             }).fail(function (err) {
                                                 res.send(err);

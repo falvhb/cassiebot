@@ -23,7 +23,7 @@ for (var bot in EXPERTBOTS) {
 
 function speech2MD(speech){
     var regexLinks = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
-    
+    var links = [];
     var md = speech;
     md = md.replace(/(?:\r\n|\r|\n)/g, '\n\n');
 
@@ -36,10 +36,14 @@ function speech2MD(speech){
             parts.shift();
             text = parts.join('/');
         }
-        return '\n\n['+text+']('+match+')  ';
+        links.push(match+'?share=bot');
+        return '\n\n['+text+']('+match+'?share=bot)  ';
     });
 
-    return md;
+    return {
+        reply: md,
+        links: links
+    };
 }
 
 
@@ -52,8 +56,10 @@ api.query = function (searchTerm, appId) {
     var deferred = Q.defer();
     var request = EXPERTBOTS[appId].api.textRequest(searchTerm);
     request.on('response', function (response) {
+        var text = speech2MD(response.result.fulfillment.speech);
         var json = {
-            reply: speech2MD(response.result.fulfillment.speech),
+            reply: text.reply,
+            links: text.links,
             score: Math.round(response.result.score * 100)
         };
         deferred.resolve(json);
