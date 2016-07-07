@@ -654,11 +654,11 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                         //an expert was forced
 
                                         apiAi.query(msg, res._meta.expert).then(function (json) {
-                                            if (json.links && json.links.length > 0){
-                                                attach(res, {type: 'relatedArticles', data: json.links});
-                                            }
 
                                             if (json.score >= CONFIG.expertMinScore){
+                                                if (json.links && json.links.length > 0){
+                                                    attach(res, {type: 'relatedArticles', data: json.links});
+                                                }
                                                 sende(res, json.reply + '. (Forced via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
                                             } else {
                                                 noAnswer();
