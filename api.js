@@ -27,6 +27,7 @@ var FEEDS = {
     finanzen: CONST.RSS + 'finanzen',
     politik: CONST.RSS + 'politk',
     erfolg: CONST.RSS + 'erfolg',
+    job: CONST.RSS + 'job',
     technologie: CONST.RSS + 'technologie'//,
     //green:'http://green.wiwo.de/feed/'
   }

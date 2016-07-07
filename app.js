@@ -3,6 +3,8 @@ var builder = require('botbuilder');
 var Botkit = require('botkit');
 var sprintf = require("sprintf-js").sprintf
 var url = require('url');
+var cheerio = require('cheerio');
+var request = require('request');
 
 var googleTranslate = require('google-translate')(process.env.translateKey || '');
 
@@ -26,6 +28,10 @@ var LUISAPPS = {
     DISPATCHER: 'c7155efb-dd09-46bc-95b8-73f8671d5528',
     GENERAL: '3a505278-4c2c-4d3b-bdb5-43c4de6cc83e'
 }
+
+var CONFIG = {
+    expertMinScore: 10
+};
 
 var NOTEXTBOT = true;
 
@@ -351,7 +357,8 @@ xdialog.on('bot.ressort.recent',
             'policy': 'politik',
             'success': 'erfolg',
             'finance': 'finanzen',
-            'financial': 'finanzen'
+            'financial': 'finanzen',
+            'job': 'job'
         };
         var found = false;
         var ressortFound = '';
@@ -530,6 +537,32 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
         next();
     });
 
+
+    //Teaser API
+    server.get("/api/wiwo/meta", function (req, res) {
+        var query = url.parse(req.url,true).query;
+        res.header("Content-Type", "application/json");
+        res.charSet('utf-8');        
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Methods', 'GET');
+
+        request.get('http://www.wiwo.de'+query.url, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                var $ = cheerio.load(body);
+                var json = {
+                    url: 'http://www.wiwo.de'+query.url
+                };
+                ['type','title','description','image'].forEach(function(name){
+                    json[name] =  $('[name="og:'+name+'"]').attr('content');
+                });
+                res.send(json);
+            } else {
+                res.send(error);
+            }
+        });
+    });
+
+
     
     //External API
     if (process.env.translateKey){
@@ -540,6 +573,25 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
             res.charSet('utf-8');
             res.header('Access-Control-Allow-Origin', '*');
             res.header('Access-Control-Allow-Methods', 'GET');            
+
+
+            // No answer available
+            function noAnswer(){
+
+                function submit(){
+                    sende(res, 'Ich kann diese Frage leider nicht beantworten und habe sie an einen Journalisten weitergeleitet.  \nDie neusten Artikel zum Thema Bewerben:', 'bot.apiai.expert.noanswer');
+                }
+
+                if (res._meta.expert === 'bewerbung'){
+                    api.readFeed('wiwo', 'job').then(function(data){
+                        attach(res, {type: 'teaser', data: data});
+                        submit();
+                    });
+                } else {
+                    submit();
+                }
+            }
+
 
             if (query.msg){
                 var msg = query.msg;
@@ -602,11 +654,15 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                         //an expert was forced
 
                                         apiAi.query(msg, res._meta.expert).then(function (json) {
-                                            if (json.links){
+                                            if (json.links && json.links.length > 0){
                                                 attach(res, {type: 'relatedArticles', data: json.links});
                                             }
 
-                                            sende(res, json.reply + '. (Forced via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
+                                            if (json.score >= CONFIG.expertMinScore){
+                                                sende(res, json.reply + '. (Forced via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
+                                            } else {
+                                                noAnswer();
+                                            }
                                         }).fail(function (err) {
                                             res.send(err);
                                         });
@@ -618,10 +674,14 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                         if (expertTopic && apiAi.hasExpert(expertTopic)){
                                             res._meta.expert = expertTopic;
                                             apiAi.query(msg, expertTopic).then(function (json) {
-                                                if (json.links){
-                                                    attach(res, {type: 'relatedArticles', data: json.links});
+                                                if (json.score >= CONFIG.expertMinScore){
+                                                    if (json.links && json.links.length > 0){
+                                                        attach(res, {type: 'relatedArticles', data: json.links});
+                                                    }
+                                                    sende(res, json.reply + '. (Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.apiai.expert');
+                                                } else {
+                                                    noAnswer();
                                                 }
-                                                sende(res, json.reply + '. (Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.apiai.expert');
                                             }).fail(function (err) {
                                                 res.send(err);
                                             });                                        
