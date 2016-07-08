@@ -114,13 +114,16 @@ function attach(session, data){
 }
 
 function sendeDefault(session, args){
-    sende(session,
-        sprintf("Es tut mir leid. Dies habe ich nicht verstanden.  \nÜbersetzung: '%s'.  \nBeste Vermutung: %s (%s%%)",
-           session.message.text,
-           helper.getIntent(args),
-           helper.getConfidence(args)
-        ),
-        'onDefault');   
+    sende(session, "Es tut mir leid. Dies habe ich nicht verstanden.", 'onDefault');
+    
+    //DEBUG Version
+    // sende(session,
+    //     sprintf("Es tut mir leid. Dies habe ich nicht verstanden.  \nÜbersetzung: '%s'.  \nBeste Vermutung: %s (%s%%)",
+    //        session.message.text,
+    //        helper.getIntent(args),
+    //        helper.getConfidence(args)
+    //     ),
+    //     'onDefault');   
 }
 
 
@@ -580,7 +583,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
             function noAnswer(){
 
                 function submit(){
-                    sende(res, 'Ich kann diese Frage leider nicht beantworten und habe sie an einen Journalisten weitergeleitet.  \nDie neusten Artikel zum Thema Bewerben:', 'bot.apiai.expert.noanswer');
+                    sende(res, 'Ich kann diese Frage leider nicht beantworten und habe sie an einen Journalisten weitergeleitet.  \n  \nDie neusten Artikel zum Thema Bewerben:', 'bot.apiai.expert.noanswer');
                 }
 
                 if (res._meta.expert === 'bewerbung'){
@@ -660,7 +663,8 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                                 if (json.links && json.links.length > 0){
                                                     attach(res, {type: 'relatedArticles', data: json.links});
                                                 }
-                                                sende(res, json.reply + '  \n(Beantwortet via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
+                                                sende(res, json.reply, 'bot.apiai.expert.forced');
+                                                //DEBUG: + '  \n(Beantwortet via  ' + res._meta.expert + 'Bot - ' + json.score + '%)'
                                             } else {
                                                 noAnswer();
                                             }
@@ -679,7 +683,8 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                                     if (json.links && json.links.length > 0){
                                                         attach(res, {type: 'relatedArticles', data: json.links});
                                                     }
-                                                    sende(res, json.reply + '  \n(Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.apiai.expert');
+                                                    sende(res, json.reply, 'bot.apiai.expert');
+                                                    //DEBUG: + '  \n(Via  ' + expertTopic + 'Bot - ' + json.score + '%)'
                                                 } else {
                                                     noAnswer();
                                                 }
