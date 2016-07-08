@@ -37,7 +37,8 @@ function speech2MD(speech){
             text = parts.join('/');
         }
         links.push(match+'?share=bot');
-        return '\n\n['+text+']('+match+'?share=bot)  ';
+        //return '\n\n['+text+']('+match+'?share=bot)  ';
+        return '';
     });
 
     return {

@@ -555,6 +555,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                 ['type','title','description','image'].forEach(function(name){
                     json[name] =  $('[name="og:'+name+'"]').attr('content');
                 });
+                json.author = $('[rel="author"]').first().text();
                 res.send(json);
             } else {
                 res.send(error);
