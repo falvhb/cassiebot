@@ -30,7 +30,7 @@ var LUISAPPS = {
 }
 
 var CONFIG = {
-    expertMinScore: 10
+    expertMinScore: 50
 };
 
 var NOTEXTBOT = true;
