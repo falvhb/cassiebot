@@ -660,7 +660,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                                 if (json.links && json.links.length > 0){
                                                     attach(res, {type: 'relatedArticles', data: json.links});
                                                 }
-                                                sende(res, json.reply + '. (Forced via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
+                                                sende(res, json.reply + '  \n(Beantwortet via  ' + res._meta.expert + 'Bot - ' + json.score + '%)', 'bot.apiai.expert.forced');
                                             } else {
                                                 noAnswer();
                                             }
@@ -679,7 +679,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                                     if (json.links && json.links.length > 0){
                                                         attach(res, {type: 'relatedArticles', data: json.links});
                                                     }
-                                                    sende(res, json.reply + '. (Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.apiai.expert');
+                                                    sende(res, json.reply + '  \n(Via  ' + expertTopic + 'Bot - ' + json.score + '%)', 'bot.apiai.expert');
                                                 } else {
                                                     noAnswer();
                                                 }
