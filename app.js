@@ -89,7 +89,7 @@ function sende(session, text, intent, force){
   if (session.flagFake){
     //check if answer was provided by bot
     var botAnswer = true;
-    var notAnswered = ['bot.apiai.expert.noanswer','bot.static.forwarded','bot.static.confused','bot.static.search__nosearchterm','bot.static.stock__nosearchterm'];  
+    var notAnswered = ['onDefault','bot.apiai.expert.noanswer','bot.static.forwarded','bot.static.confused','bot.static.search__nosearchterm','bot.static.stock__nosearchterm'];  
     if (notAnswered.indexOf(intent) > -1){
         botAnswer = false;
     }
