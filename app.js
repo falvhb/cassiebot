@@ -572,7 +572,11 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
     if (process.env.translateKey){
         server.get('/feedback', function(req, res, next) {
             //TODO: Forward to Dashboard
-            res.send('');
+            res.header("Content-Type", "application/json");
+            res.charSet('utf-8');
+            res.header('Access-Control-Allow-Origin', '*');
+            res.header('Access-Control-Allow-Methods', 'GET');             
+            res.send({success: true});
         });
 
         server.get('/ext', function(req, res, next) {
