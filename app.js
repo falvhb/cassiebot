@@ -570,6 +570,11 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
     
     //External API
     if (process.env.translateKey){
+        server.get('/feedback', function(req, res, next) {
+            //TODO: Forward to Dashboard
+            res.send('');
+        });
+
         server.get('/ext', function(req, res, next) {
             var query = url.parse(req.url,true).query;
             //console.log('params', query)
@@ -587,7 +592,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                 }
 
                 if (res._meta.expert === 'bewerbung'){
-                    api.readFeed('wiwo', 'job').then(function(data){
+                    api.readFeed('wiwo', 'erfolg').then(function(data){
                         attach(res, {type: 'teaser', data: data});
                         submit();
                     });
