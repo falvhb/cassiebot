@@ -20,6 +20,7 @@ var userdata = require('./userdata');
 var luisApi = require('./luis');
 var apiAi = require('./apiai');
 var natural = require('./natural');
+var alexa = require('./alexa');
 
 // Create bot and add dialogs
 var DEBUG = process.env.debug === 'true' || false;
@@ -533,6 +534,8 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
      */
     var server = restify.createServer();
     
+    server.use(restify.bodyParser({ mapParams: false }));
+    
     server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
     
     server.get('/', function(req, res, next) {
@@ -742,6 +745,30 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
             console.log('ERR> translateKey Env Var missing');
         }
     }
+
+    //alexa api
+    server.get('/alexa', function(req, res, next) {
+      var uri = 'https://' + req.headers.host + req.url;
+
+      request({
+        method: 'POST',
+        uri: uri,
+        json: {
+          foo: 'bar'
+        }
+      },
+      function (error, response, body) {
+        if (error) {
+          res.send('upload failed:' +  error);
+        } else {
+          res.send(body);
+        }
+         next();
+      })
+
+    });
+    
+    server.post('/alexa', alexa.process);
 
     server.listen(process.env.PORT || process.env.port || 3978, function () {
         console.log('%s listening to %s', server.name, server.url); 
