@@ -753,9 +753,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
       request({
         method: 'POST',
         uri: uri,
-        json: {
-          foo: 'bar'
-        }
+        json: alexa.json.test
       },
       function (error, response, body) {
         if (error) {
