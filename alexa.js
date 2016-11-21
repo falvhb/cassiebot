@@ -61,7 +61,7 @@ var cache = {
 
 function getCachedFeed(tenant, feed){
   if (cache[tenant] && cache[tenant][feed]){
-    return cache[tenant][feed];
+    return cache[tenant][feed].summary;
   } else {
     return 'Die Inhalte sind leider derzeit nicht verfügbar';
   }
