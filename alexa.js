@@ -141,6 +141,7 @@ app.intent('GetNewsRecent',
   function(request,response) {
     response.session('feed', 'recent');
     response.say(getCachedFeed('wiwo', 'recent'));
+    response.shouldEndSession(false);
     response.send();
   }
 );
@@ -149,6 +150,7 @@ app.intent('GetNewsHot',
   function(request,response) {
     response.session('feed', 'hot');
     response.say(getCachedFeed('wiwo', 'hot'));
+    response.shouldEndSession(false);
     response.send();
   }
 );
@@ -158,6 +160,7 @@ app.intent('GetNewsItem',
     var item = request.slot('item');
     var feed = request.session('recent') || 'recent'; 
     response.say(getCachedItem('wiwo', feed, item));
+    response.shouldEndSession(false);    
     response.send();    
   }
 );
