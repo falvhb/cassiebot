@@ -139,6 +139,7 @@ app.error = function(exception, request, response) {
 
 app.intent('GetNewsRecent',
   function(request,response) {
+    response.session('feed', 'recent');
     response.say(getCachedFeed('wiwo', 'recent'));
     response.send();
   }
@@ -146,14 +147,17 @@ app.intent('GetNewsRecent',
 
 app.intent('GetNewsHot',
   function(request,response) {
+    response.session('feed', 'hot');
     response.say(getCachedFeed('wiwo', 'hot'));
     response.send();
   }
 );
 
 app.intent('GetNewsItem',
-  function(request,response) {
-    response.say(getCachedItem('wiwo', 'recent', 1));
+  function(request,response) { 
+    var item = request.slot('item');
+    var feed = request.session('recent') || 'recent'; 
+    response.say(getCachedItem('wiwo', feed, item));
     response.send();    
   }
 );
