@@ -19,7 +19,7 @@ var helper = require('./helper');
 var userdata = require('./userdata');
 var luisApi = require('./luis');
 var apiAi = require('./apiai');
-var natural = require('./natural');
+//var natural = require('./natural');
 var alexa = require('./alexa');
 
 // Create bot and add dialogs
@@ -535,6 +535,8 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
     var server = restify.createServer();
     
     server.use(restify.bodyParser({ mapParams: false }));
+    server.use(restify.queryParser());
+
     
     server.post('/api/messages', bot.verifyBotFramework(), bot.listen());
     
@@ -686,7 +688,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
                                         
                                     } else { 
                                         //ask natural package to determine expert
-                                        var expertTopic = natural.getExpert(msg, 0.1);
+                                        //DISABLED var expertTopic = natural.getExpert(msg, 0.1);
 
                                         if (expertTopic && apiAi.hasExpert(expertTopic)){
                                             res._meta.expert = expertTopic;
@@ -749,7 +751,7 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
     //alexa api
     server.get('/alexa', function(req, res, next) {
       var uri = 'https://' + req.headers.host + req.url;
-
+      console.log('URI', uri);
       request({
         method: 'POST',
         uri: uri,
@@ -765,6 +767,8 @@ if (NOTEXTBOT && (process.env.PORT || process.env.port || DEBUG)){
       })
 
     });
+
+    server.get('/alexaapi', alexa.api);
     
     server.post('/alexa', alexa.process);
 

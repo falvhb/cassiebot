@@ -3,6 +3,10 @@ var alexaApp = require('alexa-app');
 var app = new alexaApp.app('sample');
 var api = require('./api');
 
+
+function log(txt){
+  console.log('ALEXA>' + txt);
+}
 /**
  * { id: '14547488',
     date: Fri Sep 16 2016 04:00:00 GMT+0000 (UTC),
@@ -24,16 +28,83 @@ function extractNews(data, count){
   return r.replace(/ +(?= )/g,'');
 }
 
+function extractNewsItems(data, count){
+  var r = [];
+  for (var i=0,ii=count || data.length; i<ii; i+=1){
+    r.push(data[i].summary);
+  }
+  return r;
+}
 
 var map = {
   GetNewsRecent: 'recent',
   GetNewsHot: 'hot'
 }
 
+var intro = {
+  recent: "Hier sind die drei neusten Artikel: ",
+  hot: "Die am häufigsten gelesenen Artikel:"  
+};
+
+var cache = {
+  wiwo: {
+    recent: {
+      summary: false,
+      items: []
+    },
+    hot: {
+      summary: false,
+      items: []
+    }
+  }
+};
+
+function getCachedFeed(tenant, feed){
+  if (cache[tenant] && cache[tenant][feed]){
+    return cache[tenant][feed].summary;
+  } else {
+    return 'Die Inhalte sind leider derzeit nicht verfügbar';
+  }
+}
+
+function getCachedItem(tenant, feed, item){
+  item = parseInt(item, 10);
+  if (!isNaN(item) && cache[tenant] && cache[tenant][feed] && cache[tenant][feed].items[item]){
+    return cache[tenant][feed].items[item];
+  } else {
+    return 'Fehler beim lesen von Item ' + feed + '.' + item + '';
+  }
+}
+
+function updateCache(tenant, feed){
+  api.readFeed(tenant, feed).then(function(data){
+      var text = intro[feed] + extractNews(data, 3);
+      cache[tenant][feed].summary = text;
+      cache[tenant][feed].items = extractNewsItems(data, 3);
+      log('Cache ' + tenant + '.' + feed + ' updated with ' + text.length + ' characters');
+  }).catch(function(err){
+      cache[tenant][feed].summary = 'Es ist leider ein Fehler aufgetreten beim Lesen des RSS Feeds: ' + tenant + '.' + feed + ' Err:' + err;
+  });
+}
+
+function updateCaches(){
+  log('Updated caches...');
+  Object.keys(cache).forEach(function(tenant){
+    Object.keys(cache[tenant]).forEach(function(feed){
+      updateCache(tenant, feed);
+    });
+  });
+}
+
+setInterval(updateCaches,1000*60);
+updateCaches();
+
 
 function getRSSAnswer(request, response) {
+    response.say(getCachedFeed('wiwo', request._feed));
+    response.send();
     
-    api.readFeed('wiwo', request._feed).then(function(data){
+    /*api.readFeed('wiwo', request._feed).then(function(data){
         var text = request._introText + extractNews(data, 3);
         console.log('text', text);
         response.say(text);
@@ -41,7 +112,7 @@ function getRSSAnswer(request, response) {
     }).catch(function(err){
         response.say('Es ist leider ein Fehler aufgetreten');
         response.send();
-    });
+    });*/
     return false;
   }
 
@@ -68,17 +139,29 @@ app.error = function(exception, request, response) {
 
 app.intent('GetNewsRecent',
   function(request,response) {
-    request._introText = "Hier sind die drei neusten Artikel: ";
-    request._feed = "recent";
-    return getRSSAnswer(request,response);
+    response.session('feed', 'recent');
+    response.say(getCachedFeed('wiwo', 'recent'));
+    response.shouldEndSession(false);
+    response.send();
   }
 );
 
 app.intent('GetNewsHot',
   function(request,response) {
-    request._introText = "Die am häufigsten gelesenen Artikel: ";
-    request._feed = "hot";
-    return getRSSAnswer(request,response);
+    response.session('feed', 'hot');
+    response.say(getCachedFeed('wiwo', 'hot'));
+    response.shouldEndSession(false);
+    response.send();
+  }
+);
+
+app.intent('GetNewsItem',
+  function(request,response) { 
+    var item = request.slot('item');
+    var feed = request.session('recent') || 'recent'; 
+    response.say(getCachedItem('wiwo', feed, item));
+    response.shouldEndSession(false);    
+    response.send();    
   }
 );
 
@@ -97,7 +180,23 @@ alexa.process = function(req, res, next) {
   next();
 };
 
-
+alexa.api = function(req, res, next) {
+  var text = 'Initialisiere';
+  switch (req.query.intent){
+    case 'GetNewsRecent':
+      text = getCachedFeed('wiwo', 'recent');
+      break;
+    case 'GetNewsHot':
+      text = getCachedFeed('wiwo', 'hot');
+      break;  
+    case 'GetNewsItem':
+      text = getCachedItem('wiwo', req.query.feed, req.query.item);
+      break; 
+    default:
+      text = 'Absicht unbekannt: ' + req.query.intent ;
+  }
+  res.send(text);
+};
 
 
 alexa.json = {
